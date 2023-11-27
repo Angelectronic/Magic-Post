@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MagicPost - Delivery Service</title>
+  <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>MagicPost</h1>
+      <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#" id="contact-link">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h2>Fast & Secure Delivery Service</h2>
+        <p>Send your parcels with ease and confidence!</p>
+        <a href="#" class="btn">Get Started</a>
+      </div>
+    </section>
+
+    <section class="services">
+      <div class="container">
+        <h2>Our Services</h2>
+        <div class="service-item">
+          <h3>Express Delivery</h3>
+          <p>Get your package delivered within 24 hours!</p>
+        </div>
+        <div class="service-item">
+          <h3>International Shipping</h3>
+          <p>Send parcels overseas with ease.</p>
+        </div>
+        <div class="service-item">
+          <h3>Parcel Tracking</h3>
+          <p>Track your package in real-time.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="coverage">
+      <div class="container">
+        <h2>Service Coverage</h2>
+        <p>We cover delivery services across the nation!</p>
+      </div>
+    </section>
+
+    <!-- Form for sending parcels -->
+    <section class="send-parcel">
+      <div class="container">
+        <h2 id="format-btn">Format</h2>
+        <form id="send-parcel-form" action="#" method="POST" style="display: none;">
+          <label for="sender-name">Sender's Name:</label>
+          <input type="text" id="sender-name" name="sender-name" required><br>
+    
+          <label for="receiver-name">Receiver's Name:</label>
+          <input type="text" id="receiver-name" name="receiver-name" required><br>
+    
+          <label for="parcel-details">Parcel Details:</label>
+          <textarea id="parcel-details" name="parcel-details" required></textarea><br>
+    
+          <input type="submit" value="Send Parcel">
+        </form>
+      </div>
+    </section>
+    
+  </main>
+
+  <footer>
+    <p>&copy; Welcome to our website </p>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    document.getElementById("format-btn").addEventListener("click", function() {
+      document.getElementById("form-container").style.display = "block";
+    });
+  </script>
+  <script src="form.js"></script>
+</body>
+</html>
+  <!-- JavaScript to display contact info on click -->
+  <script>
+    const sendParcelForm = document.getElementById('send-parcel-form');
+const formatButton = document.getElementById('format-btn');
+
+formatButton.addEventListener('click', function(event) {
+  event.preventDefault();
+  sendParcelForm.style.display = 'block';
+});
+
+formatButton.addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Đoạn code xử lý khi gửi vận đơn
+});
+
+    
+
+
+  </script>
+  <script src="form.js"></script>
+</body>
+</html>
