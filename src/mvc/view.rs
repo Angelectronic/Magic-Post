@@ -1,29 +1,51 @@
-pub fn view_all_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<(String, String, String, String, String, String)> {
-    employees.into_iter().map(|(id, name, position, point_id, username, password)| {
-        let id = match id {
-            Some(id) => String::from_utf8(id).unwrap(),
-            None => String::from(""),
+use serde::Serialize;
+
+#[derive(Serialize, Clone, Debug)]
+pub struct CreateEmployeeData {
+    pub id: String,
+    pub name: String,
+    pub position: String,
+    pub point_id: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct PointData {
+    pub id: String,
+    pub location: String,
+    pub p_type: String,
+}
+
+pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
+    employees.into_iter().map(|(id, name, position, point_id)| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
-        let name = match name {
-            Some(name) => String::from_utf8(name).unwrap(),
-            None => String::from(""),
+            
+        CreateEmployeeData {
+            id: convert_utf8(id),
+            name: convert_utf8(name),
+            position: convert_utf8(position),
+            point_id: convert_utf8(point_id),
+        }
+    }).collect()
+}
+
+pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>)>) -> Vec<PointData> {
+    points.into_iter().map(|(id, location, p_type)| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
-        let position = match position {
-            Some(position) => String::from_utf8(position).unwrap(),
-            None => String::from(""),
+        
+        let p_type = match p_type {
+            Some(0) => String::from("Điểm giao dịch"),
+            Some(1) => String::from("Điểm tập kết"),
+            _ => String::from(""),
         };
-        let point_id = match point_id {
-            Some(point_id) => String::from_utf8(point_id).unwrap(),
-            None => String::from(""),
-        };
-        let username = match username {
-            Some(username) => String::from_utf8(username).unwrap(),
-            None => String::from(""),
-        };
-        let password = match password {
-            Some(password) => String::from_utf8(password).unwrap(),
-            None => String::from(""),
-        };
-        (id, name, position, point_id, username, password)
+
+        PointData {
+            id: convert_utf8(id),
+            location: convert_utf8(location),
+            p_type,
+        }    
     }).collect()
 }
