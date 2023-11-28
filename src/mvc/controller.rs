@@ -1,18 +1,17 @@
 use actix_web::{get, web, HttpResponse, Responder};
 use crate::AppState;
-use r2d2_mysql::mysql::prelude::*;
+use super::models::get_all_employees;
+use super::view::view_all_employees;
+
 
 #[get("/")]
 async fn index(data: web::Data<AppState>) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
-    let users: Vec<(String, String, String)> = conn
-        .query_map(
-            "SELECT * FROM customers",
-            |(id, username, password)| (id, username, password),
-        )
-        .unwrap();
+    let users: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> = get_all_employees(&mut conn);
+    
+    let users: Vec<(String, String, String, String, String, String)> = view_all_employees(users);
     HttpResponse::Ok().body(format!("Users: {:?}", users))
 }
 
