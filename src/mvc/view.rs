@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct CreateEmployeeData {
     pub id: String,
     pub name: String,
@@ -8,7 +8,22 @@ pub struct CreateEmployeeData {
     pub point_id: String,
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct SignupData {
+    pub username: String,
+    pub password: String,
+    pub name: Option<String>,
+    pub position: Option<String>,
+    pub point_id: Option<String>,
+}
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct LoginData {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct PointData {
     pub id: String,
     pub location: String,

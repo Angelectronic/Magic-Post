@@ -1,11 +1,10 @@
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, web, HttpResponse, Responder, post};
 use crate::AppState;
-use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id};
-use super::view::{view_employees, view_points, CreateEmployeeData, PointData};
+use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id, check_employee_by_username, insert_employee, verify_employee_by_username_password};
+use super::view::{view_employees, view_points, CreateEmployeeData, PointData, SignupData, LoginData};
 
-
-#[get("/employees")]
-async fn employees(data: web::Data<AppState>) -> impl Responder {
+#[get("/all_employees")]
+async fn all_employees(data: web::Data<AppState>) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
@@ -59,8 +58,51 @@ async fn leaders(data: web::Data<AppState>, point_id: web::Path<String>) -> impl
     }
 }
 
+
+#[post("/signup")]
+async fn signup(data: web::Data<AppState>, form: web::Json<SignupData>) -> impl Responder {
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let check_employees = check_employee_by_username(&mut conn, form.username.clone());
+    
+    if check_employees.len() > 0 {
+        return HttpResponse::BadRequest().body("Username already exists");
+    } else {
+        let signup_data = SignupData {
+            username: form.username.clone(),
+            password: form.password.clone(),
+            name: form.name.clone(),
+            position: form.position.clone(),
+            point_id: form.point_id.clone(),
+        };
+        let result = insert_employee(&mut conn, signup_data);
+        match result {
+            true => HttpResponse::Ok().body("Signup successfully"),
+            false => HttpResponse::BadRequest().body("Bad request"),
+        }
+    }
+}
+
+#[get("/login")]
+// login with username and password. send back cookie
+async fn login(data: web::Data<AppState>, form: web::Json<LoginData>) -> impl Responder {
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let login_employee = verify_employee_by_username_password(&mut conn, form.username.clone(), form.password.clone());
+
+    if login_employee.len() > 0 {
+        HttpResponse::Ok().body("Login successfully")
+    } else {
+        HttpResponse::Forbidden().body("Wrong username or password")
+    }
+}
+
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(employees)
+    cfg.service(all_employees)
         .service(points)
-        .service(leaders);
+        .service(leaders)
+        .service(signup)
+        .service(login);
 }
