@@ -1,12 +1,12 @@
 mod mvc;
 use mvc::controller;
 use std::sync::Arc;
-use actix_web::{web, cookie::{Key, SameSite}};
+use actix_web::{web::{self}, cookie::{Key, SameSite}};
 use r2d2_mysql::{
     mysql::{Opts, OptsBuilder},
     r2d2, MySqlConnectionManager,
 };
-use actix_session::{ SessionMiddleware, Session, config::{ BrowserSession, CookieContentSecurity }, storage::CookieSessionStore };
+use actix_session::{ SessionMiddleware, config::{ BrowserSession, CookieContentSecurity }, storage::CookieSessionStore };
 
 struct AppState {
     pool: Arc<r2d2::Pool<MySqlConnectionManager>>

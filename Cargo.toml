@@ -12,3 +12,4 @@ r2d2 = "0.8.10"
 r2d2_mysql = "24"
 bcrypt = "0.15"
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
+uuid = { version = "1.6.1", features = ["v4", "fast-rng", "macro-diagnostics"]}

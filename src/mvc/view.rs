@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 
+/* models */
 #[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct CreateEmployeeData {
     pub id: String,
@@ -30,12 +31,13 @@ pub struct PointData {
     pub p_type: String,
 }
 
+
+/* view function */
 pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
     employees.into_iter().map(|(id, name, position, point_id)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
-            
         CreateEmployeeData {
             id: convert_utf8(id),
             name: convert_utf8(name),

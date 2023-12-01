@@ -1,10 +1,13 @@
+use actix_session::storage::{CookieSessionStore, SessionStore};
 use actix_web::{get, web, HttpResponse, Responder, post};
 use crate::AppState;
 use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id, check_employee_by_username, insert_employee, verify_employee_by_username_password};
 use super::view::{view_employees, view_points, CreateEmployeeData, PointData, SignupData, LoginData};
+use actix_session::Session;
+
 
 #[get("/all_employees")]
-async fn all_employees(data: web::Data<AppState>) -> impl Responder {
+async fn all_employees(data: web::Data<AppState>, session: Session) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
@@ -85,14 +88,19 @@ async fn signup(data: web::Data<AppState>, form: web::Json<SignupData>) -> impl 
 }
 
 #[get("/login")]
-// login with username and password. send back cookie
-async fn login(data: web::Data<AppState>, form: web::Json<LoginData>) -> impl Responder {
+async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: Session) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let login_employee = verify_employee_by_username_password(&mut conn, form.username.clone(), form.password.clone());
 
     if login_employee.len() > 0 {
+        let login_employee = view_employees(login_employee);
+        
+        session.insert("id", login_employee[0].id.clone()).unwrap();
+        session.insert("position", login_employee[0].position.clone()).unwrap();
+        session.insert("point_id", login_employee[0].point_id.clone()).unwrap();
+        
         HttpResponse::Ok().body("Login successfully")
     } else {
         HttpResponse::Forbidden().body("Wrong username or password")
