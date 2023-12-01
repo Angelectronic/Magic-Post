@@ -1,9 +1,28 @@
 use actix_web::{get, web, HttpResponse, Responder, post};
 use crate::AppState;
-use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id, check_employee_by_username, insert_employee, verify_employee_by_username_password, check_ceo};
-use super::view::{view_employees, view_points, CreateEmployeeData, PointData, SignupData, LoginData};
 use actix_session::Session;
-
+use crate::mvc::model::logic::{
+    check_ceo,
+    get_all_employees,
+    get_all_points,
+    get_transactions_points,
+    get_gathering_points,
+    get_all_leaders,
+    get_leader_by_point_id,
+    check_employee_by_username,
+    insert_employee,
+    verify_employee_by_username_password,
+};
+use crate::mvc::view::models::{
+    CreateEmployeeData,
+    PointData,
+    SignupData,
+    LoginData,
+};
+use crate::mvc::view::view::{
+    view_employees,
+    view_points,
+};
 
 #[get("/all_employees")]
 async fn all_employees(data: web::Data<AppState>, session: Session) -> impl Responder {

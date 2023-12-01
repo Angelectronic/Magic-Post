@@ -1,3 +1,3 @@
 pub mod controller;
-mod models;
+mod model;
 mod view;

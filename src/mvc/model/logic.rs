@@ -3,7 +3,8 @@ use r2d2_mysql::{
     mysql::prelude::*,
     r2d2, MySqlConnectionManager,
 };
-use super::view::SignupData;
+
+use crate::mvc::view::models::SignupData;
 
 pub fn check_ceo(session: Session) -> bool {
     match session.get::<String>("id") {
