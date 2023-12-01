@@ -1,13 +1,16 @@
-use actix_session::storage::{CookieSessionStore, SessionStore};
 use actix_web::{get, web, HttpResponse, Responder, post};
 use crate::AppState;
-use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id, check_employee_by_username, insert_employee, verify_employee_by_username_password};
+use super::models::{get_all_employees, get_all_points, get_transactions_points, get_gathering_points, get_all_leaders, get_leader_by_point_id, check_employee_by_username, insert_employee, verify_employee_by_username_password, check_ceo};
 use super::view::{view_employees, view_points, CreateEmployeeData, PointData, SignupData, LoginData};
 use actix_session::Session;
 
 
 #[get("/all_employees")]
 async fn all_employees(data: web::Data<AppState>, session: Session) -> impl Responder {
+    if !check_ceo(session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 

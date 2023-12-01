@@ -1,8 +1,27 @@
+use actix_session::Session;
 use r2d2_mysql::{
     mysql::prelude::*,
     r2d2, MySqlConnectionManager,
 };
 use super::view::SignupData;
+
+pub fn check_ceo(session: Session) -> bool {
+    match session.get::<String>("id") {
+        Ok(Some(_)) => {
+            match session.get::<String>("position") {
+                Ok(Some(position)) => {
+                    if position != "CEO" {
+                        return false;
+                    }
+                },
+                _ => return false,
+            }
+        
+        },
+        _ => return false,
+    }
+    true
+}
 
 pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> {
     conn.query_map(
