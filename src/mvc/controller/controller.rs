@@ -2,34 +2,23 @@ use actix_web::{get, web, HttpResponse, Responder, post};
 use crate::AppState;
 use actix_session::Session;
 use crate::mvc::model::logic::{
-    check_ceo,
     get_all_employees,
-    get_all_points,
-    get_transactions_points,
-    get_gathering_points,
-    get_all_leaders,
-    get_leader_by_point_id,
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
-    PointData,
     SignupData,
     LoginData,
 };
-use crate::mvc::view::view::{
-    view_employees,
-    view_points,
-};
+use crate::mvc::view::view::view_employees;
+
+use super::ceo::{points, leaders, add_point, delete_point, update_points, add_leader, delete_leader, update_leaders, get_packages, get_packages_send, get_packages_receive};
+use super::leader::add_employee;
 
 #[get("/all_employees")]
-async fn all_employees(data: web::Data<AppState>, session: Session) -> impl Responder {
-    if !check_ceo(session) {
-        return HttpResponse::Forbidden().body("Forbidden");
-    }
-
+async fn all_employees(data: web::Data<AppState>) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
@@ -38,51 +27,6 @@ async fn all_employees(data: web::Data<AppState>, session: Session) -> impl Resp
     let employees: Vec<CreateEmployeeData> = view_employees(employees);
     HttpResponse::Ok().json(employees)
 }
-
-#[get("/points/{point_type}")]
-async fn points(data: web::Data<AppState>, point_type: web::Path<String>) -> impl Responder {
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
-
-    let point_type = point_type.into_inner();
-    let points: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>)>> = match point_type.as_str() {
-        "transactions" => get_transactions_points(&mut conn),
-        "gathering" => get_gathering_points(&mut conn),
-        "all" => get_all_points(&mut conn),
-        _ => None,
-    };
-    
-    match points {
-        Some(points) => {
-            let points: Vec<PointData> = view_points(points);
-            HttpResponse::Ok().json(points)
-        },
-
-        None => HttpResponse::BadRequest().body("Bad request"),
-    }
-  }
-
-#[get("/leaders/{point_id}")]
-async fn leaders(data: web::Data<AppState>, point_id: web::Path<String>) -> impl Responder {
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
-
-    let point_id = point_id.into_inner();
-    let leaders: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> = match point_id.as_str() {
-        "all" => get_all_leaders(&mut conn),
-        _ => get_leader_by_point_id(&mut conn, point_id),
-    };
-
-    match leaders {
-        Some(leaders) => {
-            let leaders: Vec<CreateEmployeeData> = view_employees(leaders);
-            HttpResponse::Ok().json(leaders)
-        },
-
-        None => HttpResponse::BadRequest().body("Bad request"),
-    }
-}
-
 
 #[post("/signup")]
 async fn signup(data: web::Data<AppState>, form: web::Json<SignupData>) -> impl Responder {
@@ -134,5 +78,15 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(points)
         .service(leaders)
         .service(signup)
-        .service(login);
+        .service(login)
+        .service(add_point)
+        .service(delete_point)
+        .service(update_points)
+        .service(add_leader)
+        .service(delete_leader)
+        .service(update_leaders)
+        .service(get_packages)
+        .service(get_packages_send)
+        .service(add_employee)
+        .service(get_packages_receive);       
 }

@@ -1,5 +1,5 @@
 mod mvc;
-use mvc::controller;
+use mvc::controller::controller as controller;
 use std::sync::Arc;
 use actix_web::{web::{self}, cookie::{Key, SameSite}};
 use r2d2_mysql::{
