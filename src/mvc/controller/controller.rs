@@ -14,8 +14,8 @@ use crate::mvc::view::models::{
 };
 use crate::mvc::view::view::view_employees;
 
-use super::ceo::{points, leaders, add_point, delete_point, update_points, add_leader, delete_leader, update_leaders, get_packages, get_packages_send, get_packages_receive};
-use super::leader::add_employee;
+use super::ceo::init_routes_ceo;
+use super::leader::init_routes_leader;
 
 #[get("/all_employees")]
 async fn all_employees(data: web::Data<AppState>) -> impl Responder {
@@ -75,18 +75,8 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(all_employees)
-        .service(points)
-        .service(leaders)
         .service(signup)
         .service(login)
-        .service(add_point)
-        .service(delete_point)
-        .service(update_points)
-        .service(add_leader)
-        .service(delete_leader)
-        .service(update_leaders)
-        .service(get_packages)
-        .service(get_packages_send)
-        .service(add_employee)
-        .service(get_packages_receive);       
+        .configure(init_routes_ceo)
+        .configure(init_routes_leader); 
 }

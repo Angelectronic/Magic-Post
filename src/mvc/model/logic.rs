@@ -14,6 +14,39 @@ pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManage
     .unwrap()
 }
 
+pub fn get_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> {
+    let query = format!("SELECT id, name, position, point_id FROM employees WHERE id = '{}'", id);
+
+    conn.query_map(
+        query,
+        |(id, name, position, point_id)| (id, name, position, point_id),
+    )
+    .unwrap()
+}
+
+pub fn delete_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> bool {
+    let query = format!("DELETE FROM employees WHERE id = '{}'", id);
+    conn.query_drop(query).is_ok()
+}
+
+pub fn update_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String, name: Option<String>, position: Option<String>, point_id: Option<String>) -> bool {
+    let name = match name {
+        Some(name) => format!("'{}'", name),
+        None => String::from("null"),
+    };    
+    let position = match position {
+        Some(position) => format!("'{}'", position),
+        None => String::from("null"),
+    };
+    let point_id = match point_id {
+        Some(point_id) => format!("'{}'", point_id),
+        None => String::from("null"),
+    };
+
+    let query = format!("UPDATE employees SET name = {}, position = {}, point_id = {} WHERE id = '{}'", name, position, point_id, id);
+    conn.query_drop(query).is_ok()
+}
+
 pub fn insert_employee(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, data: SignupData) -> bool {
     let password = bcrypt::hash(data.password, bcrypt::DEFAULT_COST).unwrap();
 

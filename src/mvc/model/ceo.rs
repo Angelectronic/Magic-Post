@@ -81,29 +81,6 @@ pub fn update_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, i
     conn.query_drop(query).is_ok()
 }
 
-pub fn delete_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> bool {
-    let query = format!("DELETE FROM employees WHERE id = '{}'", id);
-    conn.query_drop(query).is_ok()
-}
-
-pub fn update_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String, name: Option<String>, position: Option<String>, point_id: Option<String>) -> bool {
-    let name = match name {
-        Some(name) => format!("'{}'", name),
-        None => String::from("null"),
-    };    
-    let position = match position {
-        Some(position) => format!("'{}'", position),
-        None => String::from("null"),
-    };
-    let point_id = match point_id {
-        Some(point_id) => format!("'{}'", point_id),
-        None => String::from("null"),
-    };
-
-    let query = format!("UPDATE employees SET name = {}, position = {}, point_id = {} WHERE id = '{}'", name, position, point_id, id);
-    conn.query_drop(query).is_ok()
-}
-
 pub fn get_all_packages(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
     let first_query = format!("SELECT id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address FROM package");
 

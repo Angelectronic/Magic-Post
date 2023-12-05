@@ -10,13 +10,12 @@ use crate::mvc::model::ceo::{
     get_leader_by_point_id,
     insert_point,
     delete_point_by_id,
-    update_point, delete_employee_by_id,
-    update_employee_by_id,
+    update_point,
     get_all_packages,
     get_packages_by_send_point_id,
     get_packages_by_receive_point_id
 };
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id};
 use crate::mvc::view::models::{
     CreateEmployeeData,
     PointData,
@@ -307,4 +306,18 @@ async fn get_packages_receive(data: web::Data<AppState>, point_id: web::Path<Str
 
         None => HttpResponse::BadRequest().body("Bad request"),
     }   
+}
+
+pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
+    config.service(points);
+    config.service(add_point);
+    config.service(delete_point);
+    config.service(update_points);
+    config.service(leaders);
+    config.service(add_leader);
+    config.service(delete_leader);
+    config.service(update_leaders);
+    config.service(get_packages);
+    config.service(get_packages_send);
+    config.service(get_packages_receive);
 }

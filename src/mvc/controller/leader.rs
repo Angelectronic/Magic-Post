@@ -1,19 +1,11 @@
 use actix_web::{get, web, HttpResponse, Responder, post, delete, put};
 use crate::AppState;
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, get_employee_by_id, update_employee_by_id};
 use actix_session::Session;
 
-use crate::mvc::view::models::{
-    CreateEmployeeData,
-    PointData,
-    AddPoint, SignupData, UpdateEmployee, PackageData
-};
-use crate::mvc::view::view::{
-    view_employees,
-    view_points,
-    view_packages,
-};
-use crate::mvc::model::leader::{check_leader};
+use crate::mvc::view::models::{SignupData, UpdateEmployee};
+use crate::mvc::view::view::view_employees;
+use crate::mvc::model::leader::{check_leader, get_employees_by_point_id};
 
 #[post("/leader/add_employee")]
 async fn add_employee(data: web::Data<AppState>, form: web::Json<SignupData>, session: Session) -> impl Responder {
@@ -45,8 +37,92 @@ async fn add_employee(data: web::Data<AppState>, form: web::Json<SignupData>, se
         };
         let result = insert_employee(&mut conn, signup_data);
         match result {
-            true => HttpResponse::Ok().body("Signup successfully"),
+            true => HttpResponse::Ok().body("Add employee from leader successfully"),
             false => HttpResponse::BadRequest().body("Bad request"),
         }
     }
+}
+
+#[get("/leader/view_employees")]
+async fn view_employees_handler(data: web::Data<AppState>, session: Session) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let point_id = session.get::<String>("point_id").unwrap().unwrap();
+    let result = get_employees_by_point_id(&mut conn, point_id);
+    match result {
+        Some(employees) => {
+            let employees = view_employees(employees);
+            HttpResponse::Ok().json(employees)
+        }
+        None => HttpResponse::InternalServerError().body("Error getting employees"),
+    }
+}
+
+#[delete("/leader/delete_employee/{id}")]
+async fn delete_employee_handler(data: web::Data<AppState>, session: Session, id: web::Path<String>) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let employee_id = id.into_inner();
+
+    // Check if employee exists and is not leader or CEO
+    let check_employees = get_employee_by_id(&mut conn, employee_id.clone());
+    if check_employees.len() == 0 {
+        return HttpResponse::BadRequest().body("Employee does not exist");
+    };
+    let check_employee = view_employees(check_employees)[0].clone();
+    if check_employee.position == "leader" || check_employee.position == "CEO" {
+        return HttpResponse::BadRequest().body("Cannot delete leader or CEO");
+    }
+
+    let result = delete_employee_by_id(&mut conn, employee_id);
+    match result {
+        true => HttpResponse::Ok().body("Delete employee successfully"),
+        false => HttpResponse::InternalServerError().body("Error deleting employee"),
+    }
+}
+
+#[put("/leader/update_employee/{id}")]
+async fn update_employee_handler(data: web::Data<AppState>, session: Session, id: web::Path<String>, form: web::Json<UpdateEmployee>) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let employee_id = id.into_inner();
+
+    // Check if employee exists and is not leader or CEO
+    let check_employees = get_employee_by_id(&mut conn, employee_id.clone());
+    if check_employees.len() == 0 {
+        return HttpResponse::BadRequest().body("Employee does not exist");
+    };
+    let check_employee = view_employees(check_employees)[0].clone();
+    if check_employee.position == "leader" || check_employee.position == "CEO" {
+        return HttpResponse::BadRequest().body("Cannot update leader or CEO");
+    }
+
+    let result = update_employee_by_id(&mut conn, employee_id, form.name.clone(), form.position.clone(), form.point_id.clone());
+    match result {
+        true => HttpResponse::Ok().body("Update employee successfully"),
+        false => HttpResponse::InternalServerError().body("Error updating employee"),
+    }
+}
+
+
+pub fn init_routes_leader(cfg: &mut web::ServiceConfig) {
+    cfg.service(add_employee)
+        .service(view_employees_handler)
+        .service(delete_employee_handler)
+        .service(update_employee_handler);
 }
