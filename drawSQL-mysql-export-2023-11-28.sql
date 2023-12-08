@@ -49,6 +49,14 @@ CREATE TABLE `Points`(
 );
 ALTER TABLE
     `Points` ADD PRIMARY KEY(`id`);
+CREATE TABLE `cur_point_history`(
+    `point_id` CHAR(36) NOT NULL,
+    `package_id` CHAR(36) NOT NULL,
+    `time` DATETIME NOT NULL,
+    `status` VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    `cur_point_history` ADD CONSTRAINT `cur_point_history_point_id_foreign` FOREIGN KEY(`point_id`) REFERENCES `Points`(`id`);
 ALTER TABLE
     `delivery` ADD CONSTRAINT `delivery_end_point_foreign` FOREIGN KEY(`end_point`) REFERENCES `Points`(`id`);
 ALTER TABLE
@@ -65,3 +73,5 @@ ALTER TABLE
     `Employees` ADD CONSTRAINT `employees_point_id_foreign` FOREIGN KEY(`point_id`) REFERENCES `Points`(`id`);
 ALTER TABLE
     `delivery` ADD CONSTRAINT `delivery_start_point_foreign` FOREIGN KEY(`start_point`) REFERENCES `Points`(`id`);
+ALTER TABLE
+    `cur_point_history` ADD CONSTRAINT `cur_point_history_package_id_foreign` FOREIGN KEY(`package_id`) REFERENCES `package`(`id`);

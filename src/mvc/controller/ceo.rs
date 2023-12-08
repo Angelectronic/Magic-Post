@@ -11,11 +11,9 @@ use crate::mvc::model::ceo::{
     insert_point,
     delete_point_by_id,
     update_point,
-    get_all_packages,
-    get_packages_by_send_point_id,
-    get_packages_by_receive_point_id
+    get_all_packages
 };
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id};
 use crate::mvc::view::models::{
     CreateEmployeeData,
     PointData,
@@ -38,7 +36,7 @@ async fn points(data: web::Data<AppState>, point_type: web::Path<String>, sessio
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let point_type = point_type.into_inner();
-    let points: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>)>> = match point_type.as_str() {
+    let points: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>> = match point_type.as_str() {
         "transactions" => get_transactions_points(&mut conn),
         "gathering" => get_gathering_points(&mut conn),
         "all" => get_all_points(&mut conn),
@@ -50,7 +48,6 @@ async fn points(data: web::Data<AppState>, point_type: web::Path<String>, sessio
             let points: Vec<PointData> = view_points(points);
             HttpResponse::Ok().json(points)
         },
-
         None => HttpResponse::BadRequest().body("Bad request"),
     }
   }
@@ -67,6 +64,7 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
     let point_data = AddPoint {
         location: form.location.clone(),
         p_type: form.p_type.clone(),
+        gathering_point: form.gathering_point.clone(),
     };
 
     let location = match point_data.location {
@@ -120,6 +118,7 @@ async fn update_points(data: web::Data<AppState>, point_id: web::Path<String>, f
     let point_data = AddPoint {
         location: form.location.clone(),
         p_type: form.p_type.clone(),
+        gathering_point: form.gathering_point.clone(),
     };
 
     let location = match point_data.location {
@@ -132,7 +131,12 @@ async fn update_points(data: web::Data<AppState>, point_id: web::Path<String>, f
         None => return HttpResponse::BadRequest().body("Error at p_type"),
     };
 
-    let result = update_point(&mut conn, point_id, location, p_type);
+    let gathering_point = match point_data.gathering_point {
+        Some(gathering_point) => gathering_point,
+        None => String::from("null"),
+    };
+
+    let result = update_point(&mut conn, point_id, location, p_type, gathering_point);
 
     match result {
         true => HttpResponse::Ok().body("Update point successfully"),

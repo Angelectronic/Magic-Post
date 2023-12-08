@@ -1,11 +1,11 @@
 use actix_web::{get, web, HttpResponse, Responder, post, delete, put};
 use crate::AppState;
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, get_employee_by_id, update_employee_by_id};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, get_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id};
 use actix_session::Session;
 
 use crate::mvc::view::models::{SignupData, UpdateEmployee};
-use crate::mvc::view::view::view_employees;
-use crate::mvc::model::leader::{check_leader, get_employees_by_point_id};
+use crate::mvc::view::view::{view_employees, view_packages, view_package_cur_point};
+use crate::mvc::model::leader::{check_leader, get_employees_by_point_id, get_cur_point_history_by_pointid};
 
 #[post("/leader/add_employee")]
 async fn add_employee(data: web::Data<AppState>, form: web::Json<SignupData>, session: Session) -> impl Responder {
@@ -19,6 +19,7 @@ async fn add_employee(data: web::Data<AppState>, form: web::Json<SignupData>, se
     let check_employees = check_employee_by_username(&mut conn, form.username.clone());
     
     let point_id = session.get::<String>("point_id").unwrap().unwrap();
+
     let form_point_id = form.point_id.clone().unwrap();
 
     if point_id != form_point_id {
@@ -119,10 +120,59 @@ async fn update_employee_handler(data: web::Data<AppState>, session: Session, id
     }
 }
 
+#[get("/leader/get_package_send_receive/{status}")]
+async fn get_package_send_receive(data: web::Data<AppState>, session: Session, status: web::Path<String>) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let point_id = session.get::<String>("point_id").unwrap().unwrap();
+    let result = match status.into_inner().as_str() {
+        "send" => get_packages_by_send_point_id(&mut conn, point_id),
+        "receive" => get_packages_by_receive_point_id(&mut conn, point_id),
+        _ => return HttpResponse::BadRequest().body("Bad request"),
+    };
+        
+    match result {
+        Some(packages) => {
+            let packages = view_packages(packages);
+            HttpResponse::Ok().json(packages)
+        }
+        None => HttpResponse::InternalServerError().body("Error getting packages"),
+    }
+}
+
+#[get("/leader/get_package_cur_history")]
+async fn get_package_cur_history(data: web::Data<AppState>, session: Session) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let point_id = session.get::<String>("point_id").unwrap().unwrap();
+    
+    let result = get_cur_point_history_by_pointid(&mut conn, point_id);
+        
+    match result {
+        Some(packages) => {
+            let packages = view_package_cur_point(packages);
+            HttpResponse::Ok().json(packages)
+        }
+        None => HttpResponse::InternalServerError().body("Error getting packages"),
+    }
+}
+
 
 pub fn init_routes_leader(cfg: &mut web::ServiceConfig) {
     cfg.service(add_employee)
         .service(view_employees_handler)
         .service(delete_employee_handler)
-        .service(update_employee_handler);
+        .service(update_employee_handler)
+        .service(get_package_send_receive)
+        .service(get_package_cur_history);
 }

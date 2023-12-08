@@ -16,6 +16,7 @@ use crate::mvc::view::view::view_employees;
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
+use super::subordinate::init_routes_subordinate;
 
 #[get("/all_employees")]
 async fn all_employees(data: web::Data<AppState>) -> impl Responder {
@@ -78,5 +79,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(signup)
         .service(login)
         .configure(init_routes_ceo)
-        .configure(init_routes_leader); 
+        .configure(init_routes_leader)
+        .configure(init_routes_subordinate);
 }
