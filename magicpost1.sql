@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 08, 2023 lúc 04:59 AM
+-- Thời gian đã tạo: Th12 09, 2023 lúc 03:03 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -104,16 +104,17 @@ CREATE TABLE `package` (
   `receive_address` varchar(255) DEFAULT NULL,
   `send_phone` varchar(255) DEFAULT NULL,
   `receive_phone` varchar(255) DEFAULT NULL,
-  `receive_name` varchar(255) DEFAULT NULL
+  `receive_name` varchar(255) DEFAULT NULL,
+  `next_point` char(36) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `package`
 --
 
-INSERT INTO `package` (`id`, `send_point`, `receive_point`, `cur_point`, `status`, `send_name`, `send_date`, `required_date`, `shipped_date`, `send_address`, `receive_address`, `send_phone`, `receive_phone`, `receive_name`) VALUES
-('0144fd37-957b-11ee-90fa-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Pending', 'Dũng', '2023-12-08', '2023-12-10', NULL, 'Số 12, Quận Cầu Giấy, Hà Nội', 'Đường Bưởi, Quận 1, TP.Hồ Chí Minh', '0982345634', '0978345323', 'Hùng'),
-('bd5bee42-894b-11ee-b789-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'In Transit', 'Tâm', '2023-11-01', '2023-11-23', NULL, 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '0937128323', '0314912333', 'Trung');
+INSERT INTO `package` (`id`, `send_point`, `receive_point`, `cur_point`, `status`, `send_name`, `send_date`, `required_date`, `shipped_date`, `send_address`, `receive_address`, `send_phone`, `receive_phone`, `receive_name`, `next_point`) VALUES
+('0144fd37-957b-11ee-90fa-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Pending', 'Dũng', '2023-12-08', '2023-12-10', NULL, 'Số 12, Quận Cầu Giấy, Hà Nội', 'Đường Bưởi, Quận 1, TP.Hồ Chí Minh', '0982345634', '0978345323', 'Hùng', NULL),
+('bd5bee42-894b-11ee-b789-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'In-transit', 'Tâm', '2023-11-01', '2023-11-23', NULL, 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '0937128323', '0314912333', 'Trung', NULL);
 
 -- --------------------------------------------------------
 
@@ -183,7 +184,8 @@ ALTER TABLE `package`
   ADD PRIMARY KEY (`id`),
   ADD KEY `package_receive_point_foreign` (`receive_point`),
   ADD KEY `package_cur_point_foreign` (`cur_point`),
-  ADD KEY `package_send_point_foreign` (`send_point`);
+  ADD KEY `package_send_point_foreign` (`send_point`),
+  ADD KEY `next_point` (`next_point`);
 
 --
 -- Chỉ mục cho bảng `package_delivery`
@@ -228,6 +230,7 @@ ALTER TABLE `employees`
 --
 ALTER TABLE `package`
   ADD CONSTRAINT `package_cur_point_foreign` FOREIGN KEY (`cur_point`) REFERENCES `points` (`id`),
+  ADD CONSTRAINT `package_ibfk_1` FOREIGN KEY (`next_point`) REFERENCES `points` (`id`),
   ADD CONSTRAINT `package_receive_point_foreign` FOREIGN KEY (`receive_point`) REFERENCES `points` (`id`),
   ADD CONSTRAINT `package_send_point_foreign` FOREIGN KEY (`send_point`) REFERENCES `points` (`id`);
 

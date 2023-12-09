@@ -61,7 +61,8 @@ pub struct PackageData {
     pub receive_address: Option<String>,
     pub send_phone: Option<String>,
     pub receive_phone: Option<String>,
-    pub receive_name: Option<String>
+    pub receive_name: Option<String>,
+    pub next_point: Option<String>
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
@@ -78,7 +79,8 @@ pub struct UpdatePackage {
     pub receive_address: Option<String>,
     pub send_phone: Option<String>,
     pub receive_phone: Option<String>,
-    pub receive_name: Option<String>
+    pub receive_name: Option<String>,
+    pub next_point: Option<String>
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]

@@ -37,8 +37,8 @@ pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Op
     }).collect()
 }
 
-pub fn view_packages(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<PackageData> {
-    packages.into_iter().map(|(id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address, receive_address, send_phone, receive_phone, receive_name)| {
+pub fn view_packages(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<PackageData> {
+    packages.into_iter().map(|(id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address, receive_address, send_phone, receive_phone, receive_name, next_point)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
@@ -58,13 +58,14 @@ pub fn view_packages(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec
             send_phone: Some(convert_utf8(send_phone)),
             receive_phone: Some(convert_utf8(receive_phone)),
             receive_name: Some(convert_utf8(receive_name)),
+            next_point: Some(convert_utf8(next_point))
         }
 
     }).collect()
 }
 
-pub fn view_package_cur_point(package_cur_history: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<HistoryPackageData> {
-    package_cur_history.into_iter().map(|(id, send_point, receive_point, cur_point, package_status, send_name, send_date, required_date, shipped_date, send_address, receive_address, send_phone, receive_phone, receive_name, status, time)| {
+pub fn view_package_cur_point(package_cur_history: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<HistoryPackageData> {
+    package_cur_history.into_iter().map(|(id, send_point, receive_point, cur_point, package_status, send_name, send_date, required_date, shipped_date, send_address, status, time, receive_address, send_phone, receive_phone, receive_name, next_point)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
@@ -85,6 +86,7 @@ pub fn view_package_cur_point(package_cur_history: Vec<(Option<Vec<u8>>, Option<
                 send_phone: Some(convert_utf8(send_phone)),
                 receive_phone: Some(convert_utf8(receive_phone)),
                 receive_name: Some(convert_utf8(receive_name)),
+                next_point: Some(convert_utf8(next_point))
             },
             status: Some(convert_utf8(status)),
             time: Some(convert_utf8(time)),
