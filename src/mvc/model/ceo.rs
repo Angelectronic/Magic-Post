@@ -3,6 +3,7 @@ use r2d2_mysql::{
     mysql::prelude::*,
     r2d2, MySqlConnectionManager,
 };
+use crate::mvc::view::models::AddPoint;
 
 pub fn check_ceo(session: &Session) -> bool {
     match session.get::<String>("id") {
@@ -128,10 +129,73 @@ pub fn get_leader_by_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionM
     .ok()
 }
 
+pub fn count_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p_type: String) -> Option<Vec<Option<u64>>> {
+    let query = format!("SELECT COUNT(*) FROM points WHERE type = {}", p_type);
 
-pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, location: String, p_type: i8) -> bool {
-    let query = format!("INSERT INTO points (id, location, type) VALUES (UUID(), '{}', {})", location, p_type);
-    conn.query_drop(query).is_ok()
+    conn.query_map(
+        query,
+        |count| count,
+    )
+    .ok()
+}
+
+pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point: AddPoint) -> bool {
+    let count_point = count_point(conn, point.p_type.clone()).unwrap();
+    let count_point = count_point[0].clone().unwrap();
+    let mut reference = String::from("");
+
+    let p_type: String;
+    if point.p_type == "1" {
+        p_type = String::from("0");
+        reference.push_str("GD");  
+        if count_point < 10 {
+            reference.push_str("000");
+            reference.push_str(&count_point.to_string());
+        } else if count_point < 100 {
+            reference.push_str("00");
+            reference.push_str(&count_point.to_string());
+        } else if count_point < 1000 {
+            reference.push_str("0");
+            reference.push_str(&count_point.to_string());
+        } else {
+            reference.push_str(&count_point.to_string());
+        }
+    } else {
+        p_type = String::from("1");
+        reference.push_str("TK");
+        if count_point < 10 {
+            reference.push_str("000");
+            reference.push_str(&count_point.to_string());
+        } else if count_point < 100 {
+            reference.push_str("00");
+            reference.push_str(&count_point.to_string());
+        } else if count_point < 1000 {
+            reference.push_str("0");
+            reference.push_str(&count_point.to_string());
+        } else {
+            reference.push_str(&count_point.to_string());
+        }
+    }
+
+    let id_query = "SELECT UUID()";
+    let id = conn.query_map(
+        id_query,
+        |id: String| id,
+    ).unwrap();
+    
+    let id = &id[0];
+
+    let query = format!("INSERT INTO points (id, location, type, link_point_id, create_date, reference, name, city, zipcode, phone) VALUES ('{}', '{}', {}, null, CURRENT_DATE(), '{}', '{}', '{}', '{}', '{}')", id, point.address, p_type, reference, point.name, point.city, point.zipcode, point.phone);
+    let result = conn.query_drop(query);
+
+    if result.is_ok() {
+        let query = format!("UPDATE employees SET point_id = '{}' WHERE id = '{}'", id, point.manager_id);
+        let result = conn.query_drop(query);
+        result.is_ok()
+    } else {
+        return false;
+    }
+
 }
 
 pub fn delete_point_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> bool {
@@ -139,13 +203,8 @@ pub fn delete_point_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManag
     conn.query_drop(query).is_ok()
 }
 
-pub fn update_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String, location: String, p_type: i8, gathering_point: String) -> bool {
-    let gathering_point = match gathering_point.as_str() {
-        "null" => "null".to_string(),
-        _ => format!("'{}'", gathering_point),
-    };
-
-    let query = format!("UPDATE points SET location = '{}', type = {} gathering_point = {} WHERE id = '{}'", location, p_type, gathering_point, id);
+pub fn update_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point: AddPoint, id: String) -> bool {
+    let query = format!("UPDATE points SET location = '{}', name = '{}', city = '{}', zipcode = '{}', phone = '{}' WHERE id = '{}'", point.address, point.name, point.city, point.zipcode, point.phone, id);
     conn.query_drop(query).is_ok()
 }
 

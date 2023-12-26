@@ -62,22 +62,16 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let point_data = AddPoint {
-        location: form.location.clone(),
-        p_type: form.p_type.clone(),
-        gathering_point: form.gathering_point.clone(),
+        name: form.name.clone(),
+        address: form.address.clone(),
+        city: form.city.clone(),
+        zipcode: form.zipcode.clone(),
+        phone: form.phone.clone(),
+        manager_id: form.manager_id.clone(),
+        p_type: form.p_type.clone()
     };
 
-    let location = match point_data.location {
-        Some(location) => location,
-        None => return HttpResponse::BadRequest().body("Error at location"),
-    };
-
-    let p_type = match point_data.p_type {
-        Some(p_type) => p_type,
-        None => return HttpResponse::BadRequest().body("Error at p_type"),
-    };
-
-    let result = insert_point(&mut conn, location, p_type);
+    let result = insert_point(&mut conn, point_data);
 
     match result {
         true => HttpResponse::Ok().body("Add point successfully"),
@@ -116,27 +110,16 @@ async fn update_points(data: web::Data<AppState>, point_id: web::Path<String>, f
     let point_id = point_id.into_inner();
 
     let point_data = AddPoint {
-        location: form.location.clone(),
-        p_type: form.p_type.clone(),
-        gathering_point: form.gathering_point.clone(),
+        name: form.name.clone(),
+        address: form.address.clone(),
+        city: form.city.clone(),
+        zipcode: form.zipcode.clone(),
+        phone: form.phone.clone(),
+        manager_id: form.manager_id.clone(),
+        p_type: '1'.to_string()
     };
 
-    let location = match point_data.location {
-        Some(location) => location,
-        None => return HttpResponse::BadRequest().body("Error at location"),
-    };
-
-    let p_type = match point_data.p_type {
-        Some(p_type) => p_type,
-        None => return HttpResponse::BadRequest().body("Error at p_type"),
-    };
-
-    let gathering_point = match point_data.gathering_point {
-        Some(gathering_point) => gathering_point,
-        None => String::from("null"),
-    };
-
-    let result = update_point(&mut conn, point_id, location, p_type, gathering_point);
+    let result = update_point(&mut conn, point_data, point_id);
 
     match result {
         true => HttpResponse::Ok().body("Update point successfully"),
