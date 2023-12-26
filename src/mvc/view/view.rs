@@ -15,8 +15,8 @@ pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<V
     }).collect()
 }
 
-pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>) -> Vec<PointData> {
-    points.into_iter().map(|(id, location, p_type, gathering_point)| {
+pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<PointData> {
+    points.into_iter().map(|(id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id, manager_reference)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
@@ -31,8 +31,16 @@ pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Op
             id: convert_utf8(id),
             location: convert_utf8(location),
             p_type,
-            gathering_point: Some(convert_utf8(gathering_point)),
-        
+            link_point_id: Some(convert_utf8(link_point_id)),
+            create_date: convert_utf8(create_date),
+            reference: convert_utf8(reference),
+            name: convert_utf8(name),
+            city: convert_utf8(city),
+            zipcode: convert_utf8(zipcode),
+            phone: convert_utf8(phone),
+            manager_reference: convert_utf8(manager_reference),
+            manager_id: convert_utf8(manager_id),
+            link_point_reference: convert_utf8(link_point_reference),
         }    
     }).collect()
 }

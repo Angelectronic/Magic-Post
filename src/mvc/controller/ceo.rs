@@ -36,7 +36,7 @@ async fn points(data: web::Data<AppState>, point_type: web::Path<String>, sessio
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let point_type = point_type.into_inner();
-    let points: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>> = match point_type.as_str() {
+    let points = match point_type.as_str() {
         "transactions" => get_transactions_points(&mut conn),
         "gathering" => get_gathering_points(&mut conn),
         "all" => get_all_points(&mut conn),

@@ -23,28 +23,91 @@ pub fn check_ceo(session: &Session) -> bool {
 }
 
 
-pub fn get_all_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>> {
-    conn.query_map(
-        "SELECT * FROM points",
-        |(id, location, p_type, gathering_point)| (id, location, p_type, gathering_point),
-    )
-    .ok()
+pub fn get_all_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT p1.*,p2.reference as link_point_reference, employees.point_id as manager_id FROM points as p1 LEFT JOIN points as p2 ON p1.link_point_id = p2.id LEFT JOIN employees ON p1.id = employees.point_id WHERE employees.position = 'leader'");
+
+    let first_point = conn.query_map(
+        first_query,
+        |(id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id)| (id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id),
+    );
+
+    let mut first_point = match first_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let second_query = format!("SELECT employees.reference as manager_reference FROM points LEFT JOIN employees ON points.id = employees.point_id WHERE employees.position = 'leader'");
+
+    let second_point = conn.query_map(
+        second_query,
+        |manager_reference| manager_reference,
+    );
+
+    let mut second_point = match second_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let concat_points = first_point.drain(..).zip(second_point.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second)).collect();
+
+    Some(concat_points)
 }
 
-pub fn get_transactions_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>> {
-    conn.query_map(
-        "SELECT * FROM points WHERE p_type = 0",
-        |(id, location, p_type, gathering_point)| (id, location, p_type, gathering_point),
-    )
-    .ok()
+pub fn get_transactions_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT p1.*,p2.reference as link_point_reference, employees.point_id as manager_id FROM points as p1 LEFT JOIN points as p2 ON p1.link_point_id = p2.id LEFT JOIN employees ON p1.id = employees.point_id WHERE employees.position = 'leader' AND p1.type = 0");
+
+    let first_point = conn.query_map(
+        first_query,
+        |(id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id)| (id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id),
+    );
+
+    let mut first_point = match first_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let second_query = format!("SELECT employees.reference as manager_reference FROM points LEFT JOIN employees ON points.id = employees.point_id WHERE employees.position = 'leader'");
+    let second_point = conn.query_map(
+        second_query,
+        |manager_reference| manager_reference,
+    );
+
+    let mut second_point = match second_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let concat_points = first_point.drain(..).zip(second_point.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second)).collect();
+    Some(concat_points)
 }
 
-pub fn get_gathering_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>)>> {
-    conn.query_map(
-        "SELECT * FROM points WHERE p_type = 1",
-        |(id, location, p_type, gathering_point)| (id, location, p_type, gathering_point),
-    )
-    .ok()
+pub fn get_gathering_points(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT p1.*,p2.reference as link_point_reference, employees.point_id as manager_id FROM points as p1 LEFT JOIN points as p2 ON p1.link_point_id = p2.id LEFT JOIN employees ON p1.id = employees.point_id WHERE employees.position = 'leader' AND p1.type = 1");
+
+    let first_point = conn.query_map(
+        first_query,
+        |(id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id)| (id, location, p_type, link_point_id, create_date, reference, name, city, zipcode, phone, link_point_reference, manager_id),
+    );
+
+    let mut first_point = match first_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let second_query = format!("SELECT employees.reference as manager_reference FROM points LEFT JOIN employees ON points.id = employees.point_id WHERE employees.position = 'leader'");
+
+    let second_point = conn.query_map(
+        second_query,
+        |manager_reference| manager_reference,
+    );
+
+    let mut second_point = match second_point {
+        Ok(points) => points,
+        Err(_) => return None,
+    };
+
+    let concat_points = first_point.drain(..).zip(second_point.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second)).collect();
+    Some(concat_points)
 }
 
 pub fn get_all_leaders(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
