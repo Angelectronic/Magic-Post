@@ -77,9 +77,9 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
 
     let result = insert_point(&mut conn, point_data);
 
-    match result {
-        true => HttpResponse::Ok().body("Add point successfully"),
-        false => HttpResponse::BadRequest().body("Can't add point"),
+    match result.as_str() {
+        "Error" => HttpResponse::BadRequest().body("Can't add point"),
+        _ => HttpResponse::Ok().body(result)
     }
 }
   

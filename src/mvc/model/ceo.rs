@@ -130,6 +130,12 @@ pub fn get_leader_by_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionM
 }
 
 pub fn count_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p_type: String) -> Option<Vec<Option<u64>>> {
+    let p_type = match p_type.as_str() {
+        "0" => "1",
+        "1" => "0",
+        _ => return None,
+    };
+
     let query = format!("SELECT COUNT(*) FROM points WHERE type = {}", p_type);
 
     conn.query_map(
@@ -139,9 +145,10 @@ pub fn count_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p_
     .ok()
 }
 
-pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point: AddPoint) -> bool {
+pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point: AddPoint) -> String {
     let count_point = count_point(conn, point.p_type.clone()).unwrap();
     let count_point = count_point[0].clone().unwrap();
+    let count_point = count_point + 1;
     let mut reference = String::from("");
 
     let p_type: String;
@@ -194,10 +201,15 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
 
     if result.is_ok() {
         let query = format!("UPDATE employees SET point_id = '{}' WHERE id = '{}'", id, point.manager_id);
-        let result = conn.query_drop(query);
-        result.is_ok()
+        let result2 = conn.query_drop(query);
+        
+        if result2.is_ok() {
+            return reference;
+        } else {
+            return String::from("Error");
+        }
     } else {
-        return false;
+        return String::from("Error");
     }
 
 }
