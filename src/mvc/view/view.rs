@@ -1,6 +1,29 @@
-use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData};
+use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData, LoginSendBack};
 
 /* view function */
+pub fn view_sendback_login(point: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<LoginSendBack> {
+    point.into_iter().map(|(id, location, p_type, link_point_id, link_point_reference)| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+        };
+        
+        let p_type = match p_type {
+            Some(0) => String::from("1"),
+            Some(1) => String::from("0"),
+            _ => String::from(""),
+        };
+        
+        LoginSendBack {
+            point_id: convert_utf8(id),
+            point_reference: convert_utf8(location),
+            p_type,
+            link_point_id: convert_utf8(link_point_id),
+            link_point_reference: convert_utf8(link_point_reference),
+        }
+    }).collect()
+}
+
+
 pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
     employees.into_iter().map(|(id, name, position, point_id)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {

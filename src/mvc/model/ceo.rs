@@ -184,8 +184,12 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
     ).unwrap();
     
     let id = &id[0];
+    let link_point_id = match point.link_point_id {
+        Some(link_point_id) => format!("'{}'", link_point_id),
+        None => String::from("null"),
+    };
 
-    let query = format!("INSERT INTO points (id, location, type, link_point_id, create_date, reference, name, city, zipcode, phone) VALUES ('{}', '{}', {}, null, CURRENT_DATE(), '{}', '{}', '{}', '{}', '{}')", id, point.address, p_type, reference, point.name, point.city, point.zipcode, point.phone);
+    let query = format!("INSERT INTO points (id, location, type, link_point_id, create_date, reference, name, city, zipcode, phone) VALUES ('{}', '{}', {}, {}, CURRENT_DATE(), '{}', '{}', '{}', '{}', '{}')", id, point.location, p_type, link_point_id,reference, point.name, point.city, point.zipcode, point.phone);
     let result = conn.query_drop(query);
 
     if result.is_ok() {
@@ -204,7 +208,7 @@ pub fn delete_point_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManag
 }
 
 pub fn update_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point: AddPoint, id: String) -> bool {
-    let query = format!("UPDATE points SET location = '{}', name = '{}', city = '{}', zipcode = '{}', phone = '{}' WHERE id = '{}'", point.address, point.name, point.city, point.zipcode, point.phone, id);
+    let query = format!("UPDATE points SET location = '{}', name = '{}', city = '{}', zipcode = '{}', phone = '{}', link_point_id = '{}' WHERE id = '{}'", point.location, point.name, point.city, point.zipcode, point.phone, point.link_point_id.unwrap(), id);
     conn.query_drop(query).is_ok()
 }
 

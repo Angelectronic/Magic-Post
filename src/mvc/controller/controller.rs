@@ -6,13 +6,14 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
+    get_sendback_login
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
     LoginData,
 };
-use crate::mvc::view::view::view_employees;
+use crate::mvc::view::view::{view_employees, view_sendback_login};
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
@@ -67,8 +68,17 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
         session.insert("id", login_employee[0].id.clone()).unwrap();
         session.insert("position", login_employee[0].position.clone()).unwrap();
         session.insert("point_id", login_employee[0].point_id.clone()).unwrap();
+
+        let login_send_back = get_sendback_login(&mut conn, login_employee[0].id.clone());
+        let login_send_back = view_sendback_login(login_send_back);
+
+        if login_send_back.len() == 0 {
+            return HttpResponse::Ok().body("Login successfully");
+        } else {
+            let login_send_back = login_send_back[0].clone(); 
+            HttpResponse::Ok().json(login_send_back)
+        }
         
-        HttpResponse::Ok().body("Login successfully")
     } else {
         HttpResponse::Forbidden().body("Wrong username or password")
     }

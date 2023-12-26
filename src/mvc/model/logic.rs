@@ -102,11 +102,11 @@ pub fn verify_employee_by_username_password(conn: &mut r2d2::PooledConnection<My
 }
 
 pub fn get_sendback_login(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>)> {
-    let query = format!("SELECT point.id, point.location, point.p_type, point.link_point_id, point.create_date FROM point INNER JOIN employees ON point.id = employees.point_id WHERE employees.id = '{}'", id);
+    let query = format!("SELECT p1.id, p1.reference, p1.type, p1.link_point_id, p2.reference FROM points as p1 INNER JOIN points as p2 ON p1.link_point_id = p2.id INNER JOIN employees ON p1.id = employees.point_id WHERE employees.id = '{}'", id);
 
     conn.query_map(
         query,
-        |(id, location, p_type, link_point_id, create_date)| (id, location, p_type, link_point_id, create_date),
+        |(id, reference, p_type, link_point_id, link_point_reference)| (id, reference, p_type, link_point_id, link_point_reference),
     )
     .unwrap()
 }

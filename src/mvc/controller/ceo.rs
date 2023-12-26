@@ -62,14 +62,17 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let point_data = AddPoint {
+        id: Some("".to_string()),
         name: form.name.clone(),
-        address: form.address.clone(),
+        location: form.location.clone(),
         city: form.city.clone(),
         zipcode: form.zipcode.clone(),
         phone: form.phone.clone(),
         manager_id: form.manager_id.clone(),
         p_type: form.p_type.clone(),
-        manager_reference: form.manager_reference.clone()
+        manager_reference: form.manager_reference.clone(),
+        link_point_id: form.link_point_id.clone(),
+        link_point_reference: form.link_point_reference.clone()
     };
 
     let result = insert_point(&mut conn, point_data);
@@ -111,14 +114,17 @@ async fn update_points(data: web::Data<AppState>, point_id: web::Path<String>, f
     let point_id = point_id.into_inner();
 
     let point_data = AddPoint {
+        id: Some("".to_string()),
         name: form.name.clone(),
-        address: form.address.clone(),
+        location: form.location.clone(),
         city: form.city.clone(),
         zipcode: form.zipcode.clone(),
         phone: form.phone.clone(),
         manager_id: form.manager_id.clone(),
         p_type: '1'.to_string(),
-        manager_reference: form.manager_reference.clone()
+        manager_reference: form.manager_reference.clone(),
+        link_point_id: form.link_point_id.clone(),
+        link_point_reference: form.link_point_reference.clone()
     };
 
     let result = update_point(&mut conn, point_data, point_id);

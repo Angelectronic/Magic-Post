@@ -59,14 +59,17 @@ pub struct PointData {
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct AddPoint {
+    pub id: Option<String>,
     pub name: String,
-    pub address: String,
+    pub location: String,
     pub city: String,
     pub zipcode: String,
     pub phone: String,
     pub manager_id: String,
     pub p_type: String,
-    pub manager_reference: String
+    pub manager_reference: String,
+    pub link_point_id: Option<String>,
+    pub link_point_reference: Option<String>
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
