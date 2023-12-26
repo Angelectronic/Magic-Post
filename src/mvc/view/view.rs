@@ -22,8 +22,8 @@ pub fn view_points(points: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Op
         };
         
         let p_type = match p_type {
-            Some(0) => String::from("Điểm giao dịch"),
-            Some(1) => String::from("Điểm tập kết"),
+            Some(0) => String::from("1"),
+            Some(1) => String::from("0"),
             _ => String::from(""),
         };
         
