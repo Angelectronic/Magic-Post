@@ -68,7 +68,8 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
         zipcode: form.zipcode.clone(),
         phone: form.phone.clone(),
         manager_id: form.manager_id.clone(),
-        p_type: form.p_type.clone()
+        p_type: form.p_type.clone(),
+        manager_reference: form.manager_reference.clone()
     };
 
     let result = insert_point(&mut conn, point_data);
@@ -116,7 +117,8 @@ async fn update_points(data: web::Data<AppState>, point_id: web::Path<String>, f
         zipcode: form.zipcode.clone(),
         phone: form.phone.clone(),
         manager_id: form.manager_id.clone(),
-        p_type: '1'.to_string()
+        p_type: '1'.to_string(),
+        manager_reference: form.manager_reference.clone()
     };
 
     let result = update_point(&mut conn, point_data, point_id);
@@ -165,7 +167,6 @@ async fn add_leader(data: web::Data<AppState>, form: web::Json<SignupData>, sess
             }
         },
         None => return HttpResponse::BadRequest().body("No position provided"),
-        
     }
 
     let pool = data.pool.clone();

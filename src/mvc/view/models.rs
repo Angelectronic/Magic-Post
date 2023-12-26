@@ -56,7 +56,8 @@ pub struct AddPoint {
     pub zipcode: String,
     pub phone: String,
     pub manager_id: String,
-    pub p_type: String
+    pub p_type: String,
+    pub manager_reference: String
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
