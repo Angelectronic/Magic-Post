@@ -7,6 +7,7 @@ use r2d2_mysql::{
     r2d2, MySqlConnectionManager,
 };
 use actix_session::{ SessionMiddleware, config::{ BrowserSession, CookieContentSecurity }, storage::CookieSessionStore };
+use actix_cors::Cors;
 
 struct AppState {
     pool: Arc<r2d2::Pool<MySqlConnectionManager>>
@@ -41,10 +42,18 @@ async fn main() -> std::io::Result<()> {
     let pool = get_pool().unwrap();
     let data = web::Data::new(AppState { pool });
     actix_web::HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .supports_credentials()
+            .max_age(3600);
+
         actix_web::App::new()
             .app_data(data.clone())
             .configure(controller::config)
             .wrap(session_middleware())
+            .wrap(cors)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
