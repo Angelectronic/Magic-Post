@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 26, 2023 lúc 11:39 AM
+-- Thời gian đã tạo: Th12 26, 2023 lúc 03:24 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -65,7 +65,14 @@ CREATE TABLE `delivery` (
 CREATE TABLE `employees` (
   `id` char(36) NOT NULL,
   `reference` varchar(255) NOT NULL,
+  `type` int(11) DEFAULT NULL,
+  `create_date` date DEFAULT NULL,
+  `last_seen` date DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
+  `sex` varchar(36) NOT NULL DEFAULT 'male',
+  `email` varchar(255) DEFAULT NULL,
+  `birthday` date DEFAULT NULL,
+  `phone` varchar(255) DEFAULT NULL,
   `position` varchar(255) DEFAULT NULL,
   `point_id` char(36) DEFAULT NULL,
   `username` varchar(255) NOT NULL,
@@ -76,14 +83,14 @@ CREATE TABLE `employees` (
 -- Đang đổ dữ liệu cho bảng `employees`
 --
 
-INSERT INTO `employees` (`id`, `reference`, `name`, `position`, `point_id`, `username`, `password`) VALUES
-('1102e612-8ecf-11ee-8c8f-b05cdad83c7f', 'ABC', 'Phạm Văn Hùng', 'leader', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'leader1', '$2b$12$LfPiJzMJQxpJWnba8WreseM8p9h6XudjSZ.emmJB8n7IPvGFkg1b6'),
-('285f6ae9-956c-11ee-8651-b05cdad83c7f', 'BDC', 'hieu', 'subordinate', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'hieu2', '$2b$12$VWRvsZlb6U1qbUDEgZlXPeDXDX5.Zxw18Nw38I6rgM6xbFrGhmaxS'),
-('36cbbf10-8ecf-11ee-8c8f-b05cdad83c7f', 'UDV', 'Huỳnh Thế Công', 'leader', '021599a1-8944-11ee-b789-b05cdad83c7f', 'leader2', '$2b$12$/fo3UJI/srr6W5f3vNjGxeoPsUlnuWMlWLVhBkdAFXwNh67geUh4y'),
-('485cf9b3-8ecf-11ee-8c8f-b05cdad83c7f', 'DEF', 'Đỗ Mạnh Hoa', 'leader', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'leader3', '$2b$12$IYzrthDGj8lQ35AWfusYtuYoD.bmVBiLANJjP6oKbYNtKFdgWF5Gy'),
-('594a6490-8ecf-11ee-8c8f-b05cdad83c7f', 'XYZ', 'Thế Quang', 'leader', '084bdf03-8945-11ee-b789-b05cdad83c7f', 'leader4', '$2b$12$4dxKofFmHXaZhsSwLkKIC.u8GogUC2lhDv0Z6WNW0E1RQFwtQV0ji'),
-('69c0a3df-8ecf-11ee-8c8f-b05cdad83c7f', 'POI', 'Tuấn Khôi', 'leader', '1c54efa7-8945-11ee-b789-b05cdad83c7f', 'leader5', '$2b$12$2ewviyB8lCE230QY5e9t8.wagyx/cVJTqqZ9HfeBTI7R.r3nYiXJi'),
-('9f2d9992-8ece-11ee-8c8f-b05cdad83c7f', 'ELO', 'Elon Musk', 'CEO', NULL, 'ceo', '$2b$12$5i9Tvx5gf2W1y96IrEV7vO.DLZYEJnU8PyP.N1c5jJiRWiJuBNSVq');
+INSERT INTO `employees` (`id`, `reference`, `type`, `create_date`, `last_seen`, `name`, `sex`, `email`, `birthday`, `phone`, `position`, `point_id`, `username`, `password`) VALUES
+('1102e612-8ecf-11ee-8c8f-b05cdad83c7f', 'ABC', NULL, '2023-12-08', NULL, 'Phạm Văn Hùng', 'male', NULL, NULL, '', 'leader', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'leader1', '$2b$12$LfPiJzMJQxpJWnba8WreseM8p9h6XudjSZ.emmJB8n7IPvGFkg1b6'),
+('285f6ae9-956c-11ee-8651-b05cdad83c7f', 'BDC', NULL, '2023-12-08', NULL, 'hieu', 'male', NULL, NULL, '', 'subordinate', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'hieu2', '$2b$12$VWRvsZlb6U1qbUDEgZlXPeDXDX5.Zxw18Nw38I6rgM6xbFrGhmaxS'),
+('36cbbf10-8ecf-11ee-8c8f-b05cdad83c7f', 'UDV', NULL, '2023-12-08', NULL, 'Huỳnh Thế Công', 'male', NULL, NULL, '', 'leader', '021599a1-8944-11ee-b789-b05cdad83c7f', 'leader2', '$2b$12$/fo3UJI/srr6W5f3vNjGxeoPsUlnuWMlWLVhBkdAFXwNh67geUh4y'),
+('485cf9b3-8ecf-11ee-8c8f-b05cdad83c7f', 'DEF', NULL, '2023-12-08', NULL, 'Đỗ Mạnh Hoa', 'male', NULL, NULL, '', 'leader', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'leader3', '$2b$12$IYzrthDGj8lQ35AWfusYtuYoD.bmVBiLANJjP6oKbYNtKFdgWF5Gy'),
+('594a6490-8ecf-11ee-8c8f-b05cdad83c7f', 'XYZ', NULL, '2023-12-08', NULL, 'Thế Quang', 'male', NULL, NULL, '', 'leader', '084bdf03-8945-11ee-b789-b05cdad83c7f', 'leader4', '$2b$12$4dxKofFmHXaZhsSwLkKIC.u8GogUC2lhDv0Z6WNW0E1RQFwtQV0ji'),
+('69c0a3df-8ecf-11ee-8c8f-b05cdad83c7f', 'POI', NULL, '2023-12-08', NULL, 'Tuấn Khôi', 'male', NULL, NULL, '', 'leader', '1c54efa7-8945-11ee-b789-b05cdad83c7f', 'leader5', '$2b$12$2ewviyB8lCE230QY5e9t8.wagyx/cVJTqqZ9HfeBTI7R.r3nYiXJi'),
+('9f2d9992-8ece-11ee-8c8f-b05cdad83c7f', 'ELO', NULL, '2023-12-08', NULL, 'Elon Musk', 'male', NULL, NULL, '', 'CEO', NULL, 'ceo', '$2b$12$5i9Tvx5gf2W1y96IrEV7vO.DLZYEJnU8PyP.N1c5jJiRWiJuBNSVq');
 
 -- --------------------------------------------------------
 
@@ -156,6 +163,7 @@ INSERT INTO `points` (`id`, `location`, `type`, `link_point_id`, `create_date`, 
 ('0215a62a-8944-11ee-b789-b05cdad83c7f', 'quận Cầu Giấy, Hà Nội', 0, '021599a1-8944-11ee-b789-b05cdad83c7f', '2023-09-11', 'GD0001', 'Điểm B', 'Hà Nội', '84', '0123123123'),
 ('084bd1d1-8945-11ee-b789-b05cdad83c7f', 'Đà Nẵng', 1, '084bdf03-8945-11ee-b789-b05cdad83c7f', '2023-08-01', 'TK0002', 'Điểm E', 'Đà Nẵng', '85', '0184102423'),
 ('084bdf03-8945-11ee-b789-b05cdad83c7f', 'Thành phố Hồ Chí Minh', 1, NULL, '2023-08-02', 'TK0003', 'Điểm C', 'TP.Hồ Chí Minh', '86', '0148102410'),
+('0a1a4f59-a3f7-11ee-90a4-b05cdad83c7f', 'Test', 1, NULL, '2023-12-26', 'TK0002', 'Điểm F', 'test', 'test', '0210381414'),
 ('1c54efa7-8945-11ee-b789-b05cdad83c7f', 'Quận 1, Thành phố Hồ Chí Minh', 0, '084bdf03-8945-11ee-b789-b05cdad83c7f', '2023-09-12', 'GD0002', 'Điểm D', 'TP.Hồ Chí Minh', '86', '0104810423');
 
 --
