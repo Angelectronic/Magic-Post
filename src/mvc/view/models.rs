@@ -35,15 +35,6 @@ pub struct LoginData {
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
-pub struct LoginSendBack {
-    pub point_id: String,
-    pub point_reference: String,
-    pub p_type: String,
-    pub link_point_id: String,
-    pub link_point_reference: String,
-}
-
-#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct UpdateEmployee {
     pub name: Option<String>,
     pub position: Option<String>,

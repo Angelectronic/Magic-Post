@@ -141,16 +141,6 @@ pub fn verify_employee_by_username_password(conn: &mut r2d2::PooledConnection<My
     }
 }
 
-pub fn get_sendback_login(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<i8>, Option<Vec<u8>>, Option<Vec<u8>>)> {
-    let query = format!("SELECT p1.id, p1.reference, p1.type, p1.link_point_id, p2.reference FROM points as p1 INNER JOIN points as p2 ON p1.link_point_id = p2.id INNER JOIN employees ON p1.id = employees.point_id WHERE employees.id = '{}'", id);
-
-    conn.query_map(
-        query,
-        |(id, reference, p_type, link_point_id, link_point_reference)| (id, reference, p_type, link_point_id, link_point_reference),
-    )
-    .unwrap()
-}
-
 pub fn get_packages_by_send_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
     let first_query = format!("SELECT id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address FROM package WHERE send_point = '{}'", id);
 

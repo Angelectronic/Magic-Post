@@ -1,4 +1,5 @@
 use actix_web::{get, web, HttpResponse, Responder, post};
+use serde::{Serialize, Deserialize};
 use crate::AppState;
 use actix_session::Session;
 use crate::mvc::model::logic::{
@@ -6,14 +7,14 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_sendback_login
+    get_employee_by_id
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
     LoginData,
 };
-use crate::mvc::view::view::{view_employees, view_sendback_login};
+use crate::mvc::view::view::{view_employees};
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
@@ -78,12 +79,25 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
         session.insert("position", position.clone()).unwrap();
         session.insert("point_id", point_id.clone()).unwrap();
 
-        let login_send_back = get_sendback_login(&mut conn, id.clone());
-        let login_send_back = view_sendback_login(login_send_back);
+        if position == "CEO" {
+            #[derive(Serialize, Clone, Debug, Deserialize)]
+            struct CEOposition {
+                position: String,
+            }
+            let position = CEOposition {
+                position: "CEO".to_string(),
+            };
 
-        if login_send_back.len() == 0 {
-            return HttpResponse::Ok().body("Login successfully");
+            return HttpResponse::Ok().json(position);
         } else {
+            let login_send_back = get_employee_by_id(&mut conn, id.clone());
+            let login_send_back = match login_send_back {
+                Some(login_send_back) => login_send_back,
+                None => return HttpResponse::BadRequest().body("Error getting login_send_back"),
+            };
+
+            let login_send_back = view_employees(login_send_back);
+
             let login_send_back = login_send_back[0].clone(); 
             HttpResponse::Ok().json(login_send_back)
         }
