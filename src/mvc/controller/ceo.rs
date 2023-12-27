@@ -13,7 +13,7 @@ use crate::mvc::model::ceo::{
     update_point,
     get_all_packages
 };
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id, update_employee_password_by_id};
 use crate::mvc::view::models::{
     CreateEmployeeData,
     PointData,
@@ -229,11 +229,30 @@ async fn update_leaders(data: web::Data<AppState>, id: web::Path<String>, form: 
 
     let id = id.into_inner();
 
-    let result = update_employee_by_id(&mut conn, id, form.name.clone(), form.position.clone(), form.point_id.clone());
+    let result = update_employee_by_id(&mut conn, form.clone(), id);
 
     match result {
         true => HttpResponse::Ok().body("Update leader successfully"),
         false => HttpResponse::BadRequest().body("Can't update leader"),
+    }
+}
+
+#[put("/update/leader_password/{id}")]
+async fn update_leader_password(data: web::Data<AppState>, id: web::Path<String>, new_pass: String, session: Session) -> impl Responder {
+    if !check_ceo(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+    
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let id = id.into_inner();
+    
+    let result = update_employee_password_by_id(&mut conn, new_pass, id);
+    
+    match result {
+        true => HttpResponse::Ok().body("Update leader password successfully"),
+        false => HttpResponse::BadRequest().body("Can't update leader password"),
     }
 }
 
@@ -314,5 +333,6 @@ pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(update_leaders);
     config.service(get_packages);
     config.service(get_packages_send);
-    config.service(get_packages_receive);
+    config.service(get_packages_receive)
+    .service(update_leader_password);
 }

@@ -20,6 +20,18 @@ pub struct CreateEmployeeData {
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct UpdateEmployee {
+    pub name: Option<String>,
+    pub sex: Option<String>,
+    pub email: Option<String>,
+    pub birthday: Option<String>,
+    pub phone: Option<String>,
+    pub point_id: Option<String>,
+    pub username: Option<String>,
+    pub position: Option<String>
+}
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct SignupData {
     pub username: String,
     pub password: String,
@@ -33,14 +45,6 @@ pub struct LoginData {
     pub username: String,
     pub password: String,
 }
-
-#[derive(Serialize, Clone, Debug, Deserialize)]
-pub struct UpdateEmployee {
-    pub name: Option<String>,
-    pub position: Option<String>,
-    pub point_id: Option<String>,
-}
-
 #[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct PointData {
     pub id: String,

@@ -1,6 +1,6 @@
 use actix_web::{get, web, HttpResponse, Responder, post, delete, put};
 use crate::AppState;
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, get_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, get_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id, update_employee_password_by_id};
 use actix_session::Session;
 
 use crate::mvc::view::models::{SignupData, UpdateEmployee};
@@ -123,10 +123,45 @@ async fn update_employee_handler(data: web::Data<AppState>, session: Session, id
         return HttpResponse::BadRequest().body("Cannot update leader or CEO");
     }
 
-    let result = update_employee_by_id(&mut conn, employee_id, form.name.clone(), form.position.clone(), form.point_id.clone());
+    let result = update_employee_by_id(&mut conn, form.clone(), employee_id);
+    
     match result {
         true => HttpResponse::Ok().body("Update employee successfully"),
         false => HttpResponse::InternalServerError().body("Error updating employee"),
+    }
+}
+
+#[put("/leader/update_employee_pass/{id}")]
+async fn update_employee_pass_handler(data: web::Data<AppState>, session: Session, id: web::Path<String>, new_pass: String) -> impl Responder {
+    if !check_leader(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let employee_id = id.into_inner();
+
+    // Check if employee exists and is not leader or CEO
+    let check_employees = match get_employee_by_id(&mut conn, employee_id.clone()) {
+        Some(employees) => employees,
+        None => return HttpResponse::BadRequest().body("Employee does not exist"),
+    };
+
+    if check_employees.len() == 0 {
+        return HttpResponse::BadRequest().body("Employee does not exist");
+    }
+
+    let check_employee = view_employees(check_employees)[0].clone();
+    if check_employee.position == "leader" || check_employee.position == "CEO" {
+        return HttpResponse::BadRequest().body("Cannot update leader or CEO");
+    }
+
+    let result = update_employee_password_by_id(&mut conn, new_pass, employee_id);
+    
+    match result {
+        true => HttpResponse::Ok().body("Update employee password successfully"),
+        false => HttpResponse::InternalServerError().body("Error updating employee password"),
     }
 }
 

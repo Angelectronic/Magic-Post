@@ -97,11 +97,10 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
             };
 
             let login_send_back = view_employees(login_send_back);
+            let login_send_back = login_send_back[0].clone();
 
-            let login_send_back = login_send_back[0].clone(); 
             HttpResponse::Ok().json(login_send_back)
         }
-        
     } else {
         HttpResponse::Forbidden().body("Wrong username or password")
     }

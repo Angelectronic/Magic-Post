@@ -3,7 +3,7 @@ use r2d2_mysql::{
     r2d2, MySqlConnectionManager,
 };
 
-use crate::mvc::view::models::SignupData;
+use crate::mvc::view::models::{SignupData, UpdateEmployee};
 
 pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
     let first_query = format!("SELECT employees.id, employees.reference, employees.create_date, employees.last_seen, employees.name, employees.sex, employees.email, employees.birthday, employees.phone, employees.point_id, employees.username FROM employees LEFT JOIN points ON employees.point_id = points.id");
@@ -68,21 +68,30 @@ pub fn delete_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionMa
     conn.query_drop(query).is_ok()
 }
 
-pub fn update_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String, name: Option<String>, position: Option<String>, point_id: Option<String>) -> bool {
-    let name = match name {
-        Some(name) => format!("'{}'", name),
-        None => String::from("null"),
-    };    
-    let position = match position {
-        Some(position) => format!("'{}'", position),
-        None => String::from("null"),
-    };
-    let point_id = match point_id {
-        Some(point_id) => format!("'{}'", point_id),
+pub fn update_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, employee: UpdateEmployee, id: String) -> bool {
+    let convert = |data: Option<String>| match data {
+        Some(data) => format!("'{}'", data),
         None => String::from("null"),
     };
 
-    let query = format!("UPDATE employees SET name = {}, position = {}, point_id = {} WHERE id = '{}'", name, position, point_id, id);
+    let name = convert(employee.name);
+    let sex = convert(employee.sex);
+    let email = convert(employee.email);
+    let birthday = convert(employee.birthday);
+    let phone = convert(employee.phone);
+    let point_id = convert(employee.point_id);
+    let username = convert(employee.username);
+    let position = convert(employee.position);
+
+    let query = format!("UPDATE employees SET name={}, sex={},email={},birthday={},phone={},point_id={},username={},position={} WHERE id='{}'", name, sex, email, birthday, phone, point_id, username, position, id);
+
+    conn.query_drop(query).is_ok()
+}
+
+pub fn update_employee_password_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, password: String, id: String) -> bool {
+    let password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
+    let query = format!("UPDATE employees SET password='{}' WHERE id='{}'", password, id);
+
     conn.query_drop(query).is_ok()
 }
 
