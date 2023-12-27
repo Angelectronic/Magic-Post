@@ -78,8 +78,9 @@ async fn add_point(data: web::Data<AppState>, form: web::Json<AddPoint>, session
     let result = insert_point(&mut conn, point_data);
 
     match result.as_str() {
-        "Error" => HttpResponse::BadRequest().body("Can't add point"),
-        _ => HttpResponse::Ok().body(result)
+        "Error adding point" => HttpResponse::BadRequest().body("Can't add point"),
+        "Error updating manager" => HttpResponse::Ok().body("Can't update manager but added point"),
+        &_ => HttpResponse::Ok().body(result)
     }
 }
   
@@ -145,7 +146,7 @@ async fn leaders(data: web::Data<AppState>, point_id: web::Path<String>, session
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let point_id = point_id.into_inner();
-    let leaders: Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> = match point_id.as_str() {
+    let leaders = match point_id.as_str() {
         "all" => get_all_leaders(&mut conn),
         _ => get_leader_by_point_id(&mut conn, point_id),
     };

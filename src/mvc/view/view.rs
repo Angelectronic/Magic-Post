@@ -24,16 +24,34 @@ pub fn view_sendback_login(point: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<
 }
 
 
-pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
-    employees.into_iter().map(|(id, name, position, point_id)| {
+pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
+    employees.into_iter().map(|(id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username, point_reference, p_type, position)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
+
+        let m_type = convert_utf8(p_type);
+        let m_type = match m_type.as_str() {
+            "0" => String::from("1"),
+            "1" => String::from("0"),
+            _ => String::from(""),
+        };
+
         CreateEmployeeData {
             id: convert_utf8(id),
+            reference: convert_utf8(reference),
+            create_date: convert_utf8(create_date),
+            last_seen: convert_utf8(last_seen),
             name: convert_utf8(name),
-            position: convert_utf8(position),
+            sex: convert_utf8(sex),
+            email: convert_utf8(email),
+            birthday: convert_utf8(birthday),
+            phone: Some(convert_utf8(phone)),
             point_id: convert_utf8(point_id),
+            username: convert_utf8(username),
+            point_reference: Some(convert_utf8(point_reference)),
+            m_type: m_type,
+            position: convert_utf8(position),
         }
     }).collect()
 }

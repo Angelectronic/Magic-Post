@@ -24,7 +24,10 @@ async fn all_employees(data: web::Data<AppState>) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
-    let employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> = get_all_employees(&mut conn);
+    let employees = match get_all_employees(&mut conn) {
+        Some(employees) => employees,
+        None => return HttpResponse::BadRequest().body("Error getting employees"),
+    };
     
     let employees: Vec<CreateEmployeeData> = view_employees(employees);
     HttpResponse::Ok().json(employees)
@@ -63,13 +66,19 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
     let login_employee = verify_employee_by_username_password(&mut conn, form.username.clone(), form.password.clone());
 
     if login_employee.len() > 0 {
-        let login_employee = view_employees(login_employee);
-        
-        session.insert("id", login_employee[0].id.clone()).unwrap();
-        session.insert("position", login_employee[0].position.clone()).unwrap();
-        session.insert("point_id", login_employee[0].point_id.clone()).unwrap();
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+        };
 
-        let login_send_back = get_sendback_login(&mut conn, login_employee[0].id.clone());
+        let id = convert_utf8(login_employee[0].0.clone());
+        let position = convert_utf8(login_employee[0].2.clone());
+        let point_id = convert_utf8(login_employee[0].3.clone());
+        
+        session.insert("id", id.clone()).unwrap();
+        session.insert("position", position.clone()).unwrap();
+        session.insert("point_id", point_id.clone()).unwrap();
+
+        let login_send_back = get_sendback_login(&mut conn, id.clone());
         let login_send_back = view_sendback_login(login_send_back);
 
         if login_send_back.len() == 0 {

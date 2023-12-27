@@ -76,10 +76,15 @@ async fn delete_employee_handler(data: web::Data<AppState>, session: Session, id
     let employee_id = id.into_inner();
 
     // Check if employee exists and is not leader or CEO
-    let check_employees = get_employee_by_id(&mut conn, employee_id.clone());
+    let check_employees = match get_employee_by_id(&mut conn, employee_id.clone()) {
+        Some(employees) => employees,
+        None => return HttpResponse::BadRequest().body("Error getting employees"),
+    };
+
     if check_employees.len() == 0 {
         return HttpResponse::BadRequest().body("Employee does not exist");
-    };
+    }
+
     let check_employee = view_employees(check_employees)[0].clone();
     if check_employee.position == "leader" || check_employee.position == "CEO" {
         return HttpResponse::BadRequest().body("Cannot delete leader or CEO");
@@ -104,10 +109,15 @@ async fn update_employee_handler(data: web::Data<AppState>, session: Session, id
     let employee_id = id.into_inner();
 
     // Check if employee exists and is not leader or CEO
-    let check_employees = get_employee_by_id(&mut conn, employee_id.clone());
+    let check_employees = match get_employee_by_id(&mut conn, employee_id.clone()) {
+        Some(employees) => employees,
+        None => return HttpResponse::BadRequest().body("Employee does not exist"),
+    };
+
     if check_employees.len() == 0 {
         return HttpResponse::BadRequest().body("Employee does not exist");
-    };
+    }
+
     let check_employee = view_employees(check_employees)[0].clone();
     if check_employee.position == "leader" || check_employee.position == "CEO" {
         return HttpResponse::BadRequest().body("Cannot update leader or CEO");

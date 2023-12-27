@@ -4,9 +4,19 @@ use serde::{Serialize, Deserialize, Deserializer};
 #[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct CreateEmployeeData {
     pub id: String,
+    pub reference: String,
+    pub create_date: String,
+    pub last_seen: String,
     pub name: String,
-    pub position: String,
+    pub sex: String,
+    pub email: String,
+    pub birthday: String,
+    pub phone: Option<String>,
     pub point_id: String,
+    pub username: String,
+    pub point_reference: Option<String>,
+    pub m_type: String,
+    pub position: String,
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]

@@ -5,22 +5,62 @@ use r2d2_mysql::{
 
 use crate::mvc::view::models::SignupData;
 
-pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> {
-    conn.query_map(
-        "SELECT id, name, position, point_id FROM employees",
-        |(id, name, position, point_id)| (id, name, position, point_id),
-    )
-    .unwrap()
+pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT employees.id, employees.reference, employees.create_date, employees.last_seen, employees.name, employees.sex, employees.email, employees.birthday, employees.phone, employees.point_id, employees.username FROM employees LEFT JOIN points ON employees.point_id = points.id");
+
+    let first_employees = conn.query_map(
+        first_query,
+        |(id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username)| (id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username),
+    );
+
+    let mut first_employees = match first_employees {
+        Ok(employees) => employees,
+        Err(_) => return None,
+    };
+
+    let second_query = format!("SELECT points.reference, points.type, employees.position FROM employees LEFT JOIN points ON employees.point_id = points.id");
+
+    let second_employees = conn.query_map(
+        second_query,
+        |(reference, m_type, position)| (reference, m_type, position),
+    );
+
+    let mut second_employees = match second_employees {
+        Ok(employees) => employees,
+        Err(_) => return None,
+    };
+
+    let concat_employees = first_employees.drain(..).zip(second_employees.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, second.0, second.1, second.2)).collect();
+    Some(concat_employees)
 }
 
-pub fn get_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> {
-    let query = format!("SELECT id, name, position, point_id FROM employees WHERE id = '{}'", id);
+pub fn get_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT employees.id, employees.reference, employees.create_date, employees.last_seen, employees.name, employees.sex, employees.email, employees.birthday, employees.phone, employees.point_id, employees.username FROM employees LEFT JOIN points ON employees.point_id = points.id WHERE employees.id = '{}'", id);
 
-    conn.query_map(
-        query,
-        |(id, name, position, point_id)| (id, name, position, point_id),
-    )
-    .unwrap()
+    let first_employees = conn.query_map(
+        first_query,
+        |(id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username)| (id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username),
+    );
+
+    let mut first_employees = match first_employees {
+        Ok(employees) => employees,
+        Err(_) => return None,
+    };
+
+    let second_query = format!("SELECT points.reference, points.type, employees.position FROM employees LEFT JOIN points ON employees.point_id = points.id WHERE employees.id = '{}'", id);
+
+    let second_employees = conn.query_map(
+        second_query,
+        |(reference, m_type, position)| (reference, m_type, position),
+    );
+
+    let mut second_employees = match second_employees {
+        Ok(employees) => employees,
+        Err(_) => return None,
+    };
+
+    let concat_employees = first_employees.drain(..).zip(second_employees.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, second.0, second.1, second.2)).collect();
+    Some(concat_employees)
 }
 
 pub fn delete_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> bool {
