@@ -11,9 +11,9 @@ use crate::mvc::model::ceo::{
     insert_point,
     delete_point_by_id,
     update_point,
-    get_all_packages
+    get_all_packages, get_item_by_package_id
 };
-use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id, update_employee_password_by_id};
+use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id, update_employee_password_by_id, format_nested_package};
 use crate::mvc::view::models::{
     CreateEmployeeData,
     PointData,
@@ -265,11 +265,12 @@ async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Respo
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
     
-    let package = get_all_packages(&mut conn);
+    let package = get_all_packages(&mut conn);        
     
     match package {
         Some(package) => {
-            let package: Vec<PackageData> = view_packages(package);
+            let nested_package = format_nested_package(&mut conn, package);
+            let package: Vec<PackageData> = view_packages(nested_package);
             HttpResponse::Ok().json(package)
         },
 
@@ -292,7 +293,8 @@ async fn get_packages_send(data: web::Data<AppState>, point_id: web::Path<String
     
     match package {
         Some(package) => {
-            let package: Vec<PackageData> = view_packages(package);
+            let nested_package = format_nested_package(&mut conn, package);
+            let package = view_packages(nested_package);
             HttpResponse::Ok().json(package)
         },
 
@@ -314,7 +316,8 @@ async fn get_packages_receive(data: web::Data<AppState>, point_id: web::Path<Str
     
     match package {
         Some(package) => {
-            let package: Vec<PackageData> = view_packages(package);
+            let nested_package = format_nested_package(&mut conn, package);
+            let package = view_packages(nested_package);
             HttpResponse::Ok().json(package)
         },
 
@@ -333,6 +336,6 @@ pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(update_leaders);
     config.service(get_packages);
     config.service(get_packages_send);
-    config.service(get_packages_receive)
-    .service(update_leader_password);
+    config.service(get_packages_receive);
+    config.service(update_leader_password);
 }

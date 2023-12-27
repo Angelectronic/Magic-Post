@@ -165,59 +165,59 @@ async fn update_employee_pass_handler(data: web::Data<AppState>, session: Sessio
     }
 }
 
-#[get("/leader/get_package_send_receive/{status}")]
-async fn get_package_send_receive(data: web::Data<AppState>, session: Session, status: web::Path<String>) -> impl Responder {
-    if !check_leader(&session) {
-        return HttpResponse::Forbidden().body("Forbidden");
-    }
+// #[get("/leader/get_package_send_receive/{status}")]
+// async fn get_package_send_receive(data: web::Data<AppState>, session: Session, status: web::Path<String>) -> impl Responder {
+//     if !check_leader(&session) {
+//         return HttpResponse::Forbidden().body("Forbidden");
+//     }
 
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
+//     let pool = data.pool.clone();
+//     let mut conn = pool.get().expect("Failed to get connection from pool");
 
-    let point_id = session.get::<String>("point_id").unwrap().unwrap();
-    let result = match status.into_inner().as_str() {
-        "send" => get_packages_by_send_point_id(&mut conn, point_id),
-        "receive" => get_packages_by_receive_point_id(&mut conn, point_id),
-        _ => return HttpResponse::BadRequest().body("Bad request"),
-    };
+//     let point_id = session.get::<String>("point_id").unwrap().unwrap();
+//     let result = match status.into_inner().as_str() {
+//         "send" => get_packages_by_send_point_id(&mut conn, point_id),
+//         "receive" => get_packages_by_receive_point_id(&mut conn, point_id),
+//         _ => return HttpResponse::BadRequest().body("Bad request"),
+//     };
         
-    match result {
-        Some(packages) => {
-            let packages = view_packages(packages);
-            HttpResponse::Ok().json(packages)
-        }
-        None => HttpResponse::InternalServerError().body("Error getting packages"),
-    }
-}
+//     match result {
+//         Some(packages) => {
+//             let packages = view_packages(packages);
+//             HttpResponse::Ok().json(packages)
+//         }
+//         None => HttpResponse::InternalServerError().body("Error getting packages"),
+//     }
+// }
 
-#[get("/leader/get_package_cur_history")]
-async fn get_package_cur_history(data: web::Data<AppState>, session: Session) -> impl Responder {
-    if !check_leader(&session) {
-        return HttpResponse::Forbidden().body("Forbidden");
-    }
+// #[get("/leader/get_package_cur_history")]
+// async fn get_package_cur_history(data: web::Data<AppState>, session: Session) -> impl Responder {
+//     if !check_leader(&session) {
+//         return HttpResponse::Forbidden().body("Forbidden");
+//     }
 
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
+//     let pool = data.pool.clone();
+//     let mut conn = pool.get().expect("Failed to get connection from pool");
 
-    let point_id = session.get::<String>("point_id").unwrap().unwrap();
+//     let point_id = session.get::<String>("point_id").unwrap().unwrap();
     
-    let result = get_cur_point_history_by_pointid(&mut conn, point_id);
+//     let result = get_cur_point_history_by_pointid(&mut conn, point_id);
         
-    match result {
-        Some(packages) => {
-            let packages = view_package_cur_point(packages);
-            HttpResponse::Ok().json(packages)
-        }
-        None => HttpResponse::InternalServerError().body("Error getting packages"),
-    }
-}
+//     match result {
+//         Some(packages) => {
+//             let packages = view_package_cur_point(packages);
+//             HttpResponse::Ok().json(packages)
+//         }
+//         None => HttpResponse::InternalServerError().body("Error getting packages"),
+//     }
+// }
 
 
 pub fn init_routes_leader(cfg: &mut web::ServiceConfig) {
     cfg.service(add_employee)
         .service(view_employees_handler)
         .service(delete_employee_handler)
-        .service(update_employee_handler)
-        .service(get_package_send_receive)
-        .service(get_package_cur_history);
+        .service(update_employee_handler);
+        // .service(get_package_send_receive)
+        // .service(get_package_cur_history);
 }

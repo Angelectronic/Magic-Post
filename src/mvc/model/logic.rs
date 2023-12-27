@@ -5,6 +5,8 @@ use r2d2_mysql::{
 
 use crate::mvc::view::models::{SignupData, UpdateEmployee};
 
+use super::ceo::get_item_by_package_id;
+
 pub fn get_all_employees(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
     let first_query = format!("SELECT employees.id, employees.reference, employees.create_date, employees.last_seen, employees.name, employees.sex, employees.email, employees.birthday, employees.phone, employees.point_id, employees.username FROM employees LEFT JOIN points ON employees.point_id = points.id");
 
@@ -150,12 +152,27 @@ pub fn verify_employee_by_username_password(conn: &mut r2d2::PooledConnection<My
     }
 }
 
-pub fn get_packages_by_send_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
-    let first_query = format!("SELECT id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address FROM package WHERE send_point = '{}'", id);
+pub fn format_nested_package(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, package: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>)>) -> Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Vec<(Option<Vec<u8>>, Option<i32>, Option<i32>)>)> {
+    package.into_iter().map(|package| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+        };
 
-    let first_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+        let id = convert_utf8(package.0.clone());
+        let package_item = get_item_by_package_id(conn, id.clone());
+        let package_item = package_item.unwrap();
+
+        let concat = (package.0, package.1, package.2, package.3, package.4, package.5, package.6, package.7, package.8, package.9, package.10, package.11, package.12, package.13, package.14, package.15, package.16, package.17, package.18, package.19, package.20, package.21, package.22, package.23, package.24, package.25, package.26, package.27, package.28, package_item);
+        concat
+    }).collect::<Vec<_>>()
+}
+
+pub fn get_packages_by_send_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>)>> {
+    let first_query = format!("SELECT package.id,package.package_id,package.send_name,package.send_date,package.send_phone,package.send_address,package.send_point,package.receive_name,package.receive_phone,package.receive_address,package.receive_point,IF(p2.type=0,'exchanging','gathering') as current_from FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.send_point = '{}'", id);
+
+    let first_packages = conn.query_map(
         first_query,
-        |(id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address)| (id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address),
+        |(id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from)| (id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from),
     );
 
     let mut first_packages = match first_packages {
@@ -163,10 +180,12 @@ pub fn get_packages_by_send_point_id(conn: &mut r2d2::PooledConnection<MySqlConn
         Err(_) => return None,
     };
 
-    let second_query = format!("SELECT receive_address, send_phone, receive_phone, receive_name, next_point FROM package WHERE send_point = '{}'", id);
-    let second_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+    let second_query = format!("SELECT p2.reference as from_point_id,IF(p3.type=0,'exchanging','gathering') as current_dest,p3.reference as dest_point_id,package.status,package.main_cost,package.other_cost,package.gtgt_cost,package.other_service_cost,package.total_cost,package.vat,package.package_type, package.instruction_type FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.send_point = '{}'", id);
+
+
+    let second_packages = conn.query_map(
         second_query,
-        |(receive_address, send_phone, receive_phone, receive_name, next_point)| (receive_address, send_phone, receive_phone, receive_name, next_point),
+        |(from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type)| (from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type),
     );
 
     let mut second_packages = match second_packages {
@@ -174,17 +193,30 @@ pub fn get_packages_by_send_point_id(conn: &mut r2d2::PooledConnection<MySqlConn
         Err(_) => return None,
     };
 
-    let concat_packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> = first_packages.drain(..).zip(second_packages.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, second.0, second.1, second.2, second.3, second.4)).collect();
+    let third_query = format!("SELECT package.weight,package.special_service,package.note,package.cod,package.receive_other_cost FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.send_point = '{}'", id);
+
+    let third_packages = conn.query_map(
+        third_query,
+        |(weight, special_service, note, cod, receive_other_cost)| (weight, special_service, note, cod, receive_other_cost),
+    );
+
+    let mut third_packages = match third_packages {
+        Ok(packages) => packages,
+        Err(_) => return None,
+    };
+
+    let concat_packages = first_packages.drain(..).zip(second_packages.drain(..)).zip(third_packages.drain(..)).map(|((first, second), third)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second.0, second.1, second.2, second.3, second.4, second.5, second.6, second.7, second.8, second.9, second.10, second.11, third.0, third.1, third.2, third.3, third.4)).collect();
+
     Some(concat_packages)
 
 }
 
-pub fn get_packages_by_receive_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
-    let first_query = format!("SELECT id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address FROM package WHERE receive_point = '{}'", id);
+pub fn get_packages_by_receive_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>)>> {
+    let first_query = format!("SELECT package.id,package.package_id,package.send_name,package.send_date,package.send_phone,package.send_address,package.send_point,package.receive_name,package.receive_phone,package.receive_address,package.receive_point,IF(p2.type=0,'exchanging','gathering') as current_from FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.receive_point = '{}'", id);
 
-    let first_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+    let first_packages = conn.query_map(
         first_query,
-        |(id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address)| (id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address),
+        |(id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from)| (id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from),
     );
 
     let mut first_packages = match first_packages {
@@ -192,10 +224,12 @@ pub fn get_packages_by_receive_point_id(conn: &mut r2d2::PooledConnection<MySqlC
         Err(_) => return None,
     };
 
-    let second_query = format!("SELECT receive_address, send_phone, receive_phone, receive_name, next_point FROM package WHERE receive_point = '{}'", id);
-    let second_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+    let second_query = format!("SELECT p2.reference as from_point_id,IF(p3.type=0,'exchanging','gathering') as current_dest,p3.reference as dest_point_id,package.status,package.main_cost,package.other_cost,package.gtgt_cost,package.other_service_cost,package.total_cost,package.vat,package.package_type, package.instruction_type FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.receive_point = '{}'", id);
+
+
+    let second_packages = conn.query_map(
         second_query,
-        |(receive_address, send_phone, receive_phone, receive_name, next_point)| (receive_address, send_phone, receive_phone, receive_name, next_point),
+        |(from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type)| (from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type),
     );
 
     let mut second_packages = match second_packages {
@@ -203,17 +237,30 @@ pub fn get_packages_by_receive_point_id(conn: &mut r2d2::PooledConnection<MySqlC
         Err(_) => return None,
     };
 
-    let concat_packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> = first_packages.drain(..).zip(second_packages.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, second.0, second.1, second.2, second.3, second.4)).collect();
+    let third_query = format!("SELECT package.weight,package.special_service,package.note,package.cod,package.receive_other_cost FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.receive_point = '{}'", id);
+
+    let third_packages = conn.query_map(
+        third_query,
+        |(weight, special_service, note, cod, receive_other_cost)| (weight, special_service, note, cod, receive_other_cost),
+    );
+
+    let mut third_packages = match third_packages {
+        Ok(packages) => packages,
+        Err(_) => return None,
+    };
+
+    let concat_packages = first_packages.drain(..).zip(second_packages.drain(..)).zip(third_packages.drain(..)).map(|((first, second), third)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second.0, second.1, second.2, second.3, second.4, second.5, second.6, second.7, second.8, second.9, second.10, second.11, third.0, third.1, third.2, third.3, third.4)).collect();
+
     Some(concat_packages)
 
 }
 
-pub fn get_packages_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
-    let first_query = format!("SELECT id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address FROM package WHERE id = '{}'", id);
+pub fn get_packages_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>)>> {
+    let first_query = format!("SELECT package.id,package.package_id,package.send_name,package.send_date,package.send_phone,package.send_address,package.send_point,package.receive_name,package.receive_phone,package.receive_address,package.receive_point,IF(p2.type=0,'exchanging','gathering') as current_from FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.id = '{}'", id);
 
-    let first_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+    let first_packages = conn.query_map(
         first_query,
-        |(id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address)| (id, send_point, receive_point, cur_point, status, send_name, send_date, required_date, shipped_date, send_address),
+        |(id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from)| (id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from),
     );
 
     let mut first_packages = match first_packages {
@@ -221,10 +268,12 @@ pub fn get_packages_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManag
         Err(_) => return None,
     };
 
-    let second_query = format!("SELECT receive_address, send_phone, receive_phone, receive_name FROM package WHERE id = '{}'", id);
-    let second_packages: Result<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>, _> = conn.query_map(
+    let second_query = format!("SELECT p2.reference as from_point_id,IF(p3.type=0,'exchanging','gathering') as current_dest,p3.reference as dest_point_id,package.status,package.main_cost,package.other_cost,package.gtgt_cost,package.other_service_cost,package.total_cost,package.vat,package.package_type, package.instruction_type FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.id = '{}'", id);
+
+
+    let second_packages = conn.query_map(
         second_query,
-        |(receive_address, send_phone, receive_phone, receive_name)| (receive_address, send_phone, receive_phone, receive_name),
+        |(from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type)| (from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type),
     );
 
     let mut second_packages = match second_packages {
@@ -232,7 +281,20 @@ pub fn get_packages_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManag
         Err(_) => return None,
     };
 
-    let concat_packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)> = first_packages.drain(..).zip(second_packages.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, second.0, second.1, second.2, second.3)).collect();
+    let third_query = format!("SELECT package.weight,package.special_service,package.note,package.cod,package.receive_other_cost FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.id = '{}'", id);
+
+    let third_packages = conn.query_map(
+        third_query,
+        |(weight, special_service, note, cod, receive_other_cost)| (weight, special_service, note, cod, receive_other_cost),
+    );
+
+    let mut third_packages = match third_packages {
+        Ok(packages) => packages,
+        Err(_) => return None,
+    };
+
+    let concat_packages = first_packages.drain(..).zip(second_packages.drain(..)).zip(third_packages.drain(..)).map(|((first, second), third)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second.0, second.1, second.2, second.3, second.4, second.5, second.6, second.7, second.8, second.9, second.10, second.11, third.0, third.1, third.2, third.3, third.4)).collect();
+
     Some(concat_packages)
 
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 26, 2023 lúc 05:28 PM
+-- Thời gian đã tạo: Th12 27, 2023 lúc 12:24 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -94,34 +94,68 @@ INSERT INTO `employees` (`id`, `reference`, `create_date`, `last_seen`, `name`, 
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `items`
+--
+
+CREATE TABLE `items` (
+  `item_name` varchar(255) NOT NULL DEFAULT '',
+  `quantity` int(11) DEFAULT NULL,
+  `value` int(11) NOT NULL DEFAULT 0,
+  `package_id` char(36) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `items`
+--
+
+INSERT INTO `items` (`item_name`, `quantity`, `value`, `package_id`) VALUES
+('Đồng hồ', 1, 100000, '0144fd37-957b-11ee-90fa-b05cdad83c7f'),
+('Điện thoại', 1, 10000000, '0144fd37-957b-11ee-90fa-b05cdad83c7f'),
+('Tài liệu', NULL, 100000, 'bd5bee42-894b-11ee-b789-b05cdad83c7f');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `package`
 --
 
 CREATE TABLE `package` (
   `id` char(36) NOT NULL,
-  `send_point` char(36) DEFAULT NULL,
-  `receive_point` char(36) DEFAULT NULL,
-  `cur_point` char(36) DEFAULT NULL,
-  `status` varchar(255) DEFAULT NULL,
+  `package_id` varchar(255) NOT NULL,
   `send_name` varchar(255) DEFAULT NULL,
   `send_date` date DEFAULT NULL,
-  `required_date` date DEFAULT NULL,
-  `shipped_date` date DEFAULT NULL,
-  `send_address` varchar(255) DEFAULT NULL,
-  `receive_address` varchar(255) DEFAULT NULL,
   `send_phone` varchar(255) DEFAULT NULL,
-  `receive_phone` varchar(255) DEFAULT NULL,
+  `send_address` varchar(255) DEFAULT NULL,
+  `send_point` char(36) DEFAULT NULL,
   `receive_name` varchar(255) DEFAULT NULL,
-  `next_point` char(36) DEFAULT NULL
+  `receive_phone` varchar(255) DEFAULT NULL,
+  `receive_address` varchar(255) DEFAULT NULL,
+  `receive_point` char(36) DEFAULT NULL,
+  `cur_point` char(36) DEFAULT NULL,
+  `next_point` char(36) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `main_cost` int(11) NOT NULL DEFAULT 0,
+  `other_cost` int(11) NOT NULL DEFAULT 0,
+  `gtgt_cost` int(11) NOT NULL DEFAULT 0,
+  `other_service_cost` int(11) NOT NULL DEFAULT 0,
+  `total_cost` int(11) NOT NULL DEFAULT 0,
+  `vat` int(11) NOT NULL DEFAULT 0,
+  `package_type` tinyint(4) NOT NULL DEFAULT 0,
+  `instruction_type` tinyint(4) DEFAULT NULL,
+  `weight` float NOT NULL DEFAULT 0,
+  `special_service` varchar(255) NOT NULL DEFAULT '',
+  `note` varchar(255) NOT NULL DEFAULT '',
+  `cod` int(11) NOT NULL DEFAULT 0,
+  `receive_other_cost` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `package`
 --
 
-INSERT INTO `package` (`id`, `send_point`, `receive_point`, `cur_point`, `status`, `send_name`, `send_date`, `required_date`, `shipped_date`, `send_address`, `receive_address`, `send_phone`, `receive_phone`, `receive_name`, `next_point`) VALUES
-('0144fd37-957b-11ee-90fa-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'In-transit', 'Tâm', '2023-11-01', '2023-11-23', '0000-00-00', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '0937128323', '0314912333', 'Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f'),
-('bd5bee42-894b-11ee-b789-b05cdad83c7f', '0215a62a-8944-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'In-transit', 'Tâm', '2023-11-01', '2023-11-23', NULL, 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '0937128323', '0314912333', 'Trung', '021599a1-8944-11ee-b789-b05cdad83c7f');
+INSERT INTO `package` (`id`, `package_id`, `send_name`, `send_date`, `send_phone`, `send_address`, `send_point`, `receive_name`, `receive_phone`, `receive_address`, `receive_point`, `cur_point`, `next_point`, `status`, `main_cost`, `other_cost`, `gtgt_cost`, `other_service_cost`, `total_cost`, `vat`, `package_type`, `instruction_type`, `weight`, `special_service`, `note`, `cod`, `receive_other_cost`) VALUES
+('0144fd37-957b-11ee-90fa-b05cdad83c7f', 'VN1235HN', 'Tâm', '2023-11-01', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Nam', '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '1c54efa7-8945-11ee-b789-b05cdad83c7f', 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0),
+('bd5bee42-894b-11ee-b789-b05cdad83c7f', 'VN1236HN', 'Tâm', '2023-11-01', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Trung', '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '021599a1-8944-11ee-b789-b05cdad83c7f', 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -191,6 +225,12 @@ ALTER TABLE `employees`
   ADD KEY `employees_point_id_foreign` (`point_id`);
 
 --
+-- Chỉ mục cho bảng `items`
+--
+ALTER TABLE `items`
+  ADD KEY `package_id` (`package_id`);
+
+--
 -- Chỉ mục cho bảng `package`
 --
 ALTER TABLE `package`
@@ -237,6 +277,12 @@ ALTER TABLE `delivery`
 --
 ALTER TABLE `employees`
   ADD CONSTRAINT `employees_point_id_foreign` FOREIGN KEY (`point_id`) REFERENCES `points` (`id`) ON DELETE SET NULL;
+
+--
+-- Các ràng buộc cho bảng `items`
+--
+ALTER TABLE `items`
+  ADD CONSTRAINT `items_ibfk_1` FOREIGN KEY (`package_id`) REFERENCES `package` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `package`
