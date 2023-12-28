@@ -1,4 +1,4 @@
-use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData, PackageItem, PackageDataTime};
+use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData, PackageItem, PackageDataTime, GetDelivery};
 
 pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
     employees.into_iter().map(|(id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username, point_reference, p_type, position)| {
@@ -217,6 +217,27 @@ pub fn view_packages_arrive_time(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>
                     item_value: item_value.unwrap_or_default(),
                 }
             }).collect()
+        }
+    }).collect()
+}
+
+pub fn view_delivery(deliveries: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Vec<PackageData>)>) -> Vec<GetDelivery> {
+    deliveries.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, packages)| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+        };
+        
+        GetDelivery {
+            id: convert_utf8(id),
+            delivery_id: convert_utf8(delivery_id),
+            begin_date: convert_utf8(begin_date),
+            expected_date: Some(convert_utf8(expected_date)),
+            arrived_date: Some(convert_utf8(arrived_date)),
+            current_from: convert_utf8(current_from),
+            from_point_id: convert_utf8(from_point_id),
+            current_dest: convert_utf8(current_dest),
+            dest_point_id: convert_utf8(dest_point_id),
+            packages: packages,
         }
     }).collect()
 }

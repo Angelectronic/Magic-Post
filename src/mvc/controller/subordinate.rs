@@ -138,8 +138,6 @@ async fn confirm_package_handle(data: web::Data<AppState>, session: Session, del
     }
 }
 
-
-
 pub fn init_routes_subordinate(cfg: &mut web::ServiceConfig) {
     cfg.service(add_package_transaction)
         .service(change_status_shipped_transaction)

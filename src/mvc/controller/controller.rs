@@ -10,14 +10,14 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_employee_by_id, update_employee_password_by_id, format_nested_package
+    get_employee_by_id, update_employee_password_by_id, format_nested_package, get_all_deliveries, get_packages_by_delivery_id
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
     LoginData, PackageData,
 };
-use crate::mvc::view::view::{view_employees, view_packages};
+use crate::mvc::view::view::{view_employees, view_packages, view_delivery};
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
@@ -148,7 +148,46 @@ async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Respo
 
         None => HttpResponse::BadRequest().body("Bad request"),
     }
+}
+
+#[get("/all_deliveries")]
+async fn get_deliveries(data: web::Data<AppState>, session: Session) -> impl Responder {
+    if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
     
+    let delivery = get_all_deliveries(&mut conn);       
+    
+    match delivery {
+        Some(delivery_raw) => {
+
+            let delivery_package_raw = delivery_raw.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id)| {
+                let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+                    data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+                };
+                let delivery_id_string = convert_utf8(id.clone());
+
+                let package = get_packages_by_delivery_id(&mut conn, delivery_id_string);
+                let package = match package {
+                    Some(package) => {
+                        let nested_package = format_nested_package(&mut conn, package);
+                        let package: Vec<PackageData> = view_packages(nested_package);
+                        package
+                    },
+                    None => vec![]
+                };
+                (id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, package)
+            }).collect::<Vec<_>>();
+
+            let delivery = view_delivery(delivery_package_raw);
+            HttpResponse::Ok().json(delivery)
+        },
+
+        None => HttpResponse::BadRequest().body("Error getting deliveries"),
+    }
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -157,8 +196,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(login)
         .service(update_password)
         .service(get_packages)
+        .service(get_deliveries)
         .configure(init_routes_ceo)
         .configure(init_routes_leader)
         .configure(init_routes_subordinate);
-    
 }

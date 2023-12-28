@@ -183,3 +183,17 @@ fn deser_pac<'de, D: Deserializer<'de>>(deserializer: D) -> Result<PackageData, 
     let v: PackageData = Deserialize::deserialize(deserializer)?;
     Ok(v)
 }
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct GetDelivery {
+    pub id: String,
+    pub delivery_id: String,
+    pub begin_date: String,
+    pub expected_date: Option<String>,
+    pub arrived_date: Option<String>,
+    pub current_from: String,
+    pub from_point_id: String,
+    pub current_dest: String,
+    pub dest_point_id: String,
+    pub packages: Vec<PackageData>
+}
