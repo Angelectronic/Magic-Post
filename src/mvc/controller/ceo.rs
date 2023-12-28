@@ -11,7 +11,7 @@ use crate::mvc::model::ceo::{
     insert_point,
     delete_point_by_id,
     update_point,
-    get_all_packages, get_item_by_package_id
+    get_all_packages, get_item_by_package_id, get_packages_at_point_id, get_packages_next_point_id
 };
 use crate::mvc::model::logic::{insert_employee, check_employee_by_username, delete_employee_by_id, update_employee_by_id, get_packages_by_send_point_id, get_packages_by_receive_point_id, update_employee_password_by_id, format_nested_package};
 use crate::mvc::view::models::{
@@ -325,6 +325,52 @@ async fn get_packages_receive(data: web::Data<AppState>, point_id: web::Path<Str
     }   
 }
 
+#[get("/packages/at/{point_id}")]
+async fn get_packages_at(data: web::Data<AppState>, point_id: web::Path<String>, session: Session) -> impl Responder {
+    if !check_ceo(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+    
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let point_id = point_id.into_inner();
+    let package = get_packages_at_point_id(&mut conn, point_id);
+    
+    match package {
+        Some(package) => {
+            let nested_package = format_nested_package(&mut conn, package);
+            let package = view_packages(nested_package);
+            HttpResponse::Ok().json(package)
+        },
+
+        None => HttpResponse::BadRequest().body("Bad request"),
+    }   
+}
+
+#[get("/packages/to/{point_id}")]
+async fn get_packages_to(data: web::Data<AppState>, point_id: web::Path<String>, session: Session) -> impl Responder {
+    if !check_ceo(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+    
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let point_id = point_id.into_inner();
+    let package = get_packages_next_point_id(&mut conn, point_id);
+    
+    match package {
+        Some(package) => {
+            let nested_package = format_nested_package(&mut conn, package);
+            let package = view_packages(nested_package);
+            HttpResponse::Ok().json(package)
+        },
+
+        None => HttpResponse::BadRequest().body("Bad request"),
+    }   
+}
+
 pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(points);
     config.service(add_point);
@@ -338,4 +384,6 @@ pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(get_packages_send);
     config.service(get_packages_receive);
     config.service(update_leader_password);
+    config.service(get_packages_at);
+    config.service(get_packages_to);
 }
