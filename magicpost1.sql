@@ -262,8 +262,8 @@ ALTER TABLE `points`
 -- Các ràng buộc cho bảng `cur_point_history`
 --
 ALTER TABLE `cur_point_history`
-  ADD CONSTRAINT `cur_point_history_package_id_foreign` FOREIGN KEY (`package_id`) REFERENCES `package` (`id`),
-  ADD CONSTRAINT `cur_point_history_point_id_foreign` FOREIGN KEY (`point_id`) REFERENCES `points` (`id`);
+  ADD CONSTRAINT `cur_point_history_package_id_foreign` FOREIGN KEY (`package_id`) REFERENCES `package` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `cur_point_history_point_id_foreign` FOREIGN KEY (`point_id`) REFERENCES `points` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `delivery`

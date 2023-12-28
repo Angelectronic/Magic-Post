@@ -237,25 +237,6 @@ async fn update_leaders(data: web::Data<AppState>, id: web::Path<String>, form: 
     }
 }
 
-#[put("/update/leader_password/{id}")]
-async fn update_leader_password(data: web::Data<AppState>, id: web::Path<String>, new_pass: String, session: Session) -> impl Responder {
-    if !check_ceo(&session) {
-        return HttpResponse::Forbidden().body("Forbidden");
-    }
-    
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
-    
-    let id = id.into_inner();
-    
-    let result = update_employee_password_by_id(&mut conn, new_pass, id);
-    
-    match result {
-        true => HttpResponse::Ok().body("Update leader password successfully"),
-        false => HttpResponse::BadRequest().body("Can't update leader password"),
-    }
-}
-
 #[get("/packages/all")]
 async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Responder {
     if !check_ceo(&session) {
@@ -392,7 +373,6 @@ pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(get_packages);
     config.service(get_packages_send);
     config.service(get_packages_receive);
-    config.service(update_leader_password);
     config.service(get_packages_at);
     config.service(get_packages_to);
 }

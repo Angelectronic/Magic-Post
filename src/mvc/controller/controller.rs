@@ -1,13 +1,16 @@
-use actix_web::{get, web, HttpResponse, Responder, post};
+use actix_web::{get, web, HttpResponse, Responder, post, put};
 use serde::{Serialize, Deserialize};
 use crate::AppState;
+use crate::mvc::model::ceo::check_ceo;
+use crate::mvc::model::leader::check_leader;
+use crate::mvc::model::subordinate::check_subordinate;
 use actix_session::Session;
 use crate::mvc::model::logic::{
     get_all_employees,
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_employee_by_id
+    get_employee_by_id, update_employee_password_by_id
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
@@ -59,7 +62,7 @@ async fn signup(data: web::Data<AppState>, form: web::Json<SignupData>) -> impl 
     }
 }
 
-#[get("/login")]
+#[post("/login")]
 async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: Session) -> impl Responder {
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
@@ -106,11 +109,32 @@ async fn login(data: web::Data<AppState>, form: web::Json<LoginData>, session: S
     }
 }
 
+#[put("/change_password")]
+async fn update_password(data: web::Data<AppState>, new_pass: String, session: Session) -> impl Responder {
+    if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+    
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let id = session.get::<String>("id").unwrap().unwrap();
+    
+    let result = update_employee_password_by_id(&mut conn, new_pass, id);
+    
+    match result {
+        true => HttpResponse::Ok().body("Update leader password successfully"),
+        false => HttpResponse::BadRequest().body("Can't update leader password"),
+    }
+}
+
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(all_employees)
         .service(signup)
         .service(login)
+        .service(update_password)
         .configure(init_routes_ceo)
         .configure(init_routes_leader)
         .configure(init_routes_subordinate);
+    
 }
