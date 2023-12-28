@@ -1,7 +1,7 @@
 use actix_web::{get, web, HttpResponse, Responder, post, put};
 use serde::{Serialize, Deserialize};
 use crate::AppState;
-use crate::mvc::model::ceo::check_ceo;
+use crate::mvc::model::ceo::{check_ceo, get_all_packages};
 use crate::mvc::model::leader::check_leader;
 use crate::mvc::model::subordinate::check_subordinate;
 use actix_session::Session;
@@ -10,14 +10,14 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_employee_by_id, update_employee_password_by_id
+    get_employee_by_id, update_employee_password_by_id, format_nested_package
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
-    LoginData,
+    LoginData, PackageData,
 };
-use crate::mvc::view::view::{view_employees};
+use crate::mvc::view::view::{view_employees, view_packages};
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
@@ -128,11 +128,35 @@ async fn update_password(data: web::Data<AppState>, new_pass: String, session: S
     }
 }
 
+#[get("/packages/all")]
+async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Responder {
+    if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    
+    let package = get_all_packages(&mut conn);        
+    
+    match package {
+        Some(package) => {
+            let nested_package = format_nested_package(&mut conn, package);
+            let package: Vec<PackageData> = view_packages(nested_package);
+            HttpResponse::Ok().json(package)
+        },
+
+        None => HttpResponse::BadRequest().body("Bad request"),
+    }
+    
+}
+
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(all_employees)
         .service(signup)
         .service(login)
         .service(update_password)
+        .service(get_packages)
         .configure(init_routes_ceo)
         .configure(init_routes_leader)
         .configure(init_routes_subordinate);

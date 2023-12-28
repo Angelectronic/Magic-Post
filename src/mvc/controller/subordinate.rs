@@ -2,7 +2,7 @@ use actix_web::{get, web, HttpResponse, Responder, post, delete, put};
 use crate::AppState;
 use actix_session::Session;
 use crate::mvc::view::models::{UpdatePackage, PackageData};
-use crate::mvc::model::subordinate::{check_subordinate, insert_package, change_status_packaging, change_status_shipped, update_package, get_point_by_id, update_send_to_gathering};
+use crate::mvc::model::subordinate::{check_subordinate, insert_package, change_status_packaging, change_status_shipped, update_package, get_point_by_id, update_send_to_gathering, confirm_delivery};
 use crate::mvc::model::logic::get_packages_by_id;
 
 
@@ -122,11 +122,28 @@ async fn update_package_handle(form: web::Json<UpdatePackage>, data: web::Data<A
     }
 }
 
+#[put("/subordinate/confirm/{delivery_id}")]
+async fn confirm_package_handle(data: web::Data<AppState>, session: Session, delivery_id: web::Path<String>) -> impl Responder {
+    if !check_subordinate(&session) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let delivery_id = delivery_id.into_inner();
+    match confirm_delivery(&mut conn, delivery_id) {
+        true => HttpResponse::Ok().body("Confirm delivery successfully"),
+        false => HttpResponse::InternalServerError().body("Cannot confirm delivery"),
+    }
+}
+
 
 
 pub fn init_routes_subordinate(cfg: &mut web::ServiceConfig) {
     cfg.service(add_package_transaction)
         .service(change_status_shipped_transaction)
         .service(update_package_handle)
-        .service(send_to_gathering);
+        .service(send_to_gathering)
+        .service(confirm_package_handle);
 }

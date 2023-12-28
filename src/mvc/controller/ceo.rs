@@ -237,29 +237,6 @@ async fn update_leaders(data: web::Data<AppState>, id: web::Path<String>, form: 
     }
 }
 
-#[get("/packages/all")]
-async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Responder {
-    if !check_ceo(&session) {
-        return HttpResponse::Forbidden().body("Forbidden");
-    }
-
-    let pool = data.pool.clone();
-    let mut conn = pool.get().expect("Failed to get connection from pool");
-    
-    let package = get_all_packages(&mut conn);        
-    
-    match package {
-        Some(package) => {
-            let nested_package = format_nested_package(&mut conn, package);
-            let package: Vec<PackageData> = view_packages(nested_package);
-            HttpResponse::Ok().json(package)
-        },
-
-        None => HttpResponse::BadRequest().body("Bad request"),
-    }
-    
-}
-
 #[get("/packages/send/{point_id}")]
 async fn get_packages_send(data: web::Data<AppState>, point_id: web::Path<String>, session: Session) -> impl Responder {
     if !check_ceo(&session) {
@@ -370,7 +347,6 @@ pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(add_leader);
     config.service(delete_leader);
     config.service(update_leaders);
-    config.service(get_packages);
     config.service(get_packages_send);
     config.service(get_packages_receive);
     config.service(get_packages_at);

@@ -96,3 +96,15 @@ pub fn update_send_to_gathering(conn: &mut r2d2::PooledConnection<MySqlConnectio
     let query = format!("UPDATE package SET next_point = '{}' WHERE id = '{}'",  gathering_point_id, package_id);
     conn.query_drop(query).is_ok()
 }
+
+pub fn confirm_delivery(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, delivery_id: String) -> bool {
+    let query = format!("UPDATE delivery SET arrived_date = NOW() WHERE id = '{}'", delivery_id);
+    let result = conn.query_drop(query).is_ok();
+
+    if result {
+        let second_query = format!("UPDATE package SET package.cur_point = package.next_point, package.next_point = null WHERE package.id IN (SELECT package_delivery.package_id FROM package_delivery WHERE package_delivery.delivery_id='{}')", delivery_id);
+        conn.query_drop(second_query).is_ok()
+    } else {
+        false
+    }
+}

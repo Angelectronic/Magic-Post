@@ -91,6 +91,18 @@ pub fn update_employee_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionMa
 }
 
 pub fn update_employee_password_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, password: String, id: String) -> bool {
+    let old_password = format!("SELECT password FROM employees WHERE id = '{}'", id);
+    let old_password = conn.query_map(
+        old_password,
+        |password: Vec<u8>| password,
+    ).unwrap();
+
+    let old_password = String::from_utf8(old_password[0].clone()).unwrap_or_default();
+    let check_password = bcrypt::verify(password.clone(), old_password.as_str()).unwrap_or_default();
+    if check_password {
+        return false;
+    }
+
     let password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
     let query = format!("UPDATE employees SET password='{}' WHERE id='{}'", password, id);
 
@@ -143,6 +155,9 @@ pub fn verify_employee_by_username_password(conn: &mut r2d2::PooledConnection<My
 
         let check_password = bcrypt::verify(password, password_real.as_str()).unwrap_or_default();
         if check_password {
+            let query = format!("UPDATE employees SET last_seen=NOW() WHERE id='{}'", String::from_utf8(employee.0.clone()).unwrap_or_default());
+            let _result = conn.query_drop(query).is_ok();
+
             vec![(Some(employee.0), employee.1, employee.2, employee.3)]
         } else {
             vec![]
