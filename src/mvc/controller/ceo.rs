@@ -22,7 +22,7 @@ use crate::mvc::view::models::{
 use crate::mvc::view::view::{
     view_employees,
     view_points,
-    view_packages,
+    view_packages, view_packages_arrive_time,
 };
 
 
@@ -338,9 +338,17 @@ async fn get_packages_at(data: web::Data<AppState>, point_id: web::Path<String>,
     let package = get_packages_at_point_id(&mut conn, point_id);
     
     match package {
-        Some(package) => {
-            let nested_package = format_nested_package(&mut conn, package);
-            let package = view_packages(nested_package);
+        Some(packages_status) => {
+            let mut packages_status2 = packages_status.clone();
+            
+            let packages = packages_status.into_iter().map(|(id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from, from_point_id, current_dest, dest_point_id, package_status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type, weight, special_service, note, cod, receive_other_cost, ..)| {
+                (id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from, from_point_id, current_dest, dest_point_id, package_status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type, weight, special_service, note, cod, receive_other_cost)
+            }).collect();
+
+            let mut nested_package = format_nested_package(&mut conn, packages);
+            let nested_package_status = nested_package.drain(..).zip(packages_status2.drain(..)).map(|(first, second)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, first.12, first.13, first.14, first.15, first.16, first.17, first.18, first.19, first.20, first.21, first.22, first.23, first.24, first.25, first.26, first.27, first.28, second.29, first.29)).collect::<Vec<_>>();
+
+            let package = view_packages_arrive_time(nested_package_status);
             HttpResponse::Ok().json(package)
         },
 
@@ -370,6 +378,7 @@ async fn get_packages_to(data: web::Data<AppState>, point_id: web::Path<String>,
         None => HttpResponse::BadRequest().body("Bad request"),
     }   
 }
+
 
 pub fn init_routes_ceo(config: &mut web::ServiceConfig) {
     config.service(points);

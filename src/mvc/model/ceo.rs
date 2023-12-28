@@ -324,8 +324,8 @@ pub fn get_all_packages(conn: &mut r2d2::PooledConnection<MySqlConnectionManager
     Some(concat_packages)
 }
 
-pub fn get_packages_at_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point_id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>)>> {
-    let first_query = format!("SELECT package.id,package.package_id,package.send_name,package.send_date,package.send_phone,package.send_address,package.send_point,package.receive_name,package.receive_phone,package.receive_address,package.receive_point,IF(p2.type=0,'exchanging','gathering') as current_from FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.cur_point = '{}'", point_id);
+pub fn get_packages_at_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, point_id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<Vec<u8>>)>> {
+    let first_query = format!("SELECT package.id,package.package_id,package.send_name,package.send_date,package.send_phone,package.send_address,package.send_point,package.receive_name,package.receive_phone,package.receive_address,package.receive_point,IF(p2.type=0,'exchanging','gathering') as current_from FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id INNER JOIN cur_point_history ON package.id = cur_point_history.package_id WHERE package.cur_point = '{}' AND cur_point_history.status = 'send'", point_id);
 
     let first_packages = conn.query_map(
         first_query,
@@ -337,12 +337,10 @@ pub fn get_packages_at_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectio
         Err(_) => return None,
     };
 
-    let second_query = format!("SELECT p2.reference as from_point_id,IF(p3.type=0,'exchanging','gathering') as current_dest,p3.reference as dest_point_id,package.status,package.main_cost,package.other_cost,package.gtgt_cost,package.other_service_cost,package.total_cost,package.vat,package.package_type, package.instruction_type FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.cur_point = '{}'", point_id);
-
-
+    let second_query = format!("SELECT p2.reference as from_point_id,IF(p3.type=0,'exchanging','gathering') as current_dest,p3.reference as dest_point_id,package.status,package.main_cost,package.other_cost,package.gtgt_cost,package.other_service_cost,package.total_cost,package.vat,package.package_type, package.instruction_type FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id INNER JOIN cur_point_history ON package.id = cur_point_history.package_id WHERE package.cur_point = '{}' AND cur_point_history.status = 'send'", point_id);
     let second_packages = conn.query_map(
         second_query,
-        |(from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type)| (from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type),
+        |(from_point_id, current_dest, dest_point_id, package_status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type)| (from_point_id, current_dest, dest_point_id, package_status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type),
     );
 
     let mut second_packages = match second_packages {
@@ -350,11 +348,10 @@ pub fn get_packages_at_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectio
         Err(_) => return None,
     };
 
-    let third_query = format!("SELECT package.weight,package.special_service,package.note,package.cod,package.receive_other_cost FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id WHERE package.cur_point = '{}'", point_id);
-
+    let third_query = format!("SELECT package.weight,package.special_service,package.note,package.cod,package.receive_other_cost, cur_point_history.time FROM package LEFT JOIN points as p1 ON package.send_point = p1.id LEFT JOIN points as p4 ON package.receive_point = p4.id LEFT JOIN points as p2 ON package.cur_point = p2.id LEFT JOIN points as p3 ON package.next_point = p3.id INNER JOIN cur_point_history ON package.id = cur_point_history.package_id WHERE package.cur_point = '{}' AND cur_point_history.status = 'send'", point_id);
     let third_packages = conn.query_map(
         third_query,
-        |(weight, special_service, note, cod, receive_other_cost)| (weight, special_service, note, cod, receive_other_cost),
+        |(weight, special_service, note, cod, receive_other_cost, time)| (weight, special_service, note, cod, receive_other_cost, time),
     );
 
     let mut third_packages = match third_packages {
@@ -362,8 +359,7 @@ pub fn get_packages_at_point_id(conn: &mut r2d2::PooledConnection<MySqlConnectio
         Err(_) => return None,
     };
 
-    let concat_packages = first_packages.drain(..).zip(second_packages.drain(..)).zip(third_packages.drain(..)).map(|((first, second), third)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second.0, second.1, second.2, second.3, second.4, second.5, second.6, second.7, second.8, second.9, second.10, second.11, third.0, third.1, third.2, third.3, third.4)).collect::<Vec<_>>();
-
+    let concat_packages = first_packages.drain(..).zip(second_packages.drain(..)).zip(third_packages.drain(..)).map(|((first, second), third)| (first.0, first.1, first.2, first.3, first.4, first.5, first.6, first.7, first.8, first.9, first.10, first.11, second.0, second.1, second.2, second.3, second.4, second.5, second.6, second.7, second.8, second.9, second.10, second.11, third.0, third.1, third.2, third.3, third.4, third.5)).collect();
     Some(concat_packages)
 }
 

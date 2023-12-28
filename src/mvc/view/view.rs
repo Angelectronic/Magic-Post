@@ -1,4 +1,4 @@
-use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData, PackageItem};
+use super::models::{CreateEmployeeData, PointData, PackageData, HistoryPackageData, PackageItem, PackageDataTime};
 
 pub fn view_employees(employees: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>) -> Vec<CreateEmployeeData> {
     employees.into_iter().map(|(id, reference, create_date, last_seen, name, sex, email, birthday, phone, point_id, username, point_reference, p_type, position)| {
@@ -166,5 +166,57 @@ pub fn view_package_cur_point(package_cur_history: Vec<(Option<Vec<u8>>, Option<
             time: Some(convert_utf8(time)),
         }
 
+    }).collect()
+}
+
+pub fn view_packages_arrive_time(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i32>, Option<i8>, Option<i8>, Option<f32>, Option<Vec<u8>>, Option<Vec<u8>>, Option<i32>, Option<i32>, Option<Vec<u8>>, Vec<(Option<Vec<u8>>, Option<i32>, Option<i32>)>)>) -> Vec<PackageDataTime> {
+    packages.into_iter().map(|(id, package_id, send_name, send_date, send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, current_from, from_point_id, current_dest, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type, weight, special_service, note, cod, receive_other_cost, arrive_at_dest, items)| {
+        let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+            data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+        };
+
+        PackageDataTime {
+            id: convert_utf8(id),
+            package_id: convert_utf8(package_id),
+            send_name: Some(convert_utf8(send_name)),
+            send_date: Some(convert_utf8(send_date)),
+            send_phone: Some(convert_utf8(send_phone)),
+            send_address: Some(convert_utf8(send_address)),
+            send_point: Some(convert_utf8(send_point)),
+            receive_name: Some(convert_utf8(receive_name)),
+            receive_phone: Some(convert_utf8(receive_phone)),
+            receive_address: Some(convert_utf8(receive_address)),
+            receive_point: Some(convert_utf8(receive_point)),
+            current_from: Some(convert_utf8(current_from)),
+            from_point_id: Some(convert_utf8(from_point_id)),
+            current_dest: Some(convert_utf8(current_dest)),
+            dest_point_id: Some(convert_utf8(dest_point_id)),
+            status: Some(convert_utf8(status)),
+            main_cost: main_cost.unwrap_or_default(),
+            other_cost: other_cost.unwrap_or_default(),
+            gtgt_cost: gtgt_cost.unwrap_or_default(),
+            other_service_cost: other_service_cost.unwrap_or_default(),
+            total_cost: total_cost.unwrap_or_default(),
+            vat: vat.unwrap_or_default(),
+            package_type: package_type.unwrap_or_default(),
+            instruction_type: instruction_type.unwrap_or_default(),
+            weight: weight.unwrap_or_default(),
+            special_service: convert_utf8(special_service),
+            note: convert_utf8(note),
+            cod: cod.unwrap_or_default(),
+            receive_other_cost: receive_other_cost.unwrap_or_default(),
+            arrive_at_dest: Some(convert_utf8(arrive_at_dest)),
+            items: items.into_iter().map(|(item_name, item_quantity, item_value)| {
+                let convert_utf8 = |data: Option<Vec<u8>>| -> String {
+                    data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
+                };
+
+                PackageItem {
+                    item_name: convert_utf8(item_name),
+                    item_quantity: item_quantity.unwrap_or_default(),
+                    item_value: item_value.unwrap_or_default(),
+                }
+            }).collect()
+        }
     }).collect()
 }

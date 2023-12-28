@@ -119,6 +119,41 @@ pub struct PackageData {
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct PackageDataTime {
+    pub id: String,
+    pub package_id: String,
+    pub send_name: Option<String>,
+    pub send_date: Option<String>,
+    pub send_phone: Option<String>,
+    pub send_address: Option<String>,
+    pub send_point: Option<String>,
+    pub receive_name: Option<String>,
+    pub receive_phone: Option<String>,
+    pub receive_address: Option<String>,
+    pub receive_point: Option<String>,
+    pub current_from: Option<String>,
+    pub from_point_id: Option<String>,
+    pub current_dest: Option<String>,
+    pub dest_point_id: Option<String>,
+    pub status: Option<String>,
+    pub main_cost: i32,
+    pub other_cost: i32,
+    pub gtgt_cost: i32,
+    pub other_service_cost: i32,
+    pub total_cost: i32,
+    pub vat: i32,
+    pub package_type: i8,
+    pub instruction_type: i8,
+    pub weight: f32,
+    pub special_service: String,
+    pub note: String,
+    pub cod: i32,
+    pub receive_other_cost: i32,
+    pub items: Vec<PackageItem>,
+    pub arrive_at_dest: Option<String>
+}
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct UpdatePackage {
     pub send_point: Option<String>,
     pub receive_point: Option<String>,
