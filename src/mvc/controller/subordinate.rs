@@ -23,20 +23,32 @@ async fn add_package_transaction(form: web::Json<UpdatePackage>, data: web::Data
     }
 
     let new_package = UpdatePackage {
-        send_point: Option::from(point_id.clone()),
-        receive_point: form.receive_point.clone(),
-        cur_point: Option::from(point_id.clone()),
-        status: Option::from("Pending".to_string()),
         send_name: form.send_name.clone(),
         send_date: form.send_date.clone(),
-        required_date: form.required_date.clone(),
-        shipped_date: form.shipped_date.clone(),
-        send_address: form.send_address.clone(),
-        receive_address: form.receive_address.clone(),
         send_phone: form.send_phone.clone(),
-        receive_phone: form.receive_phone.clone(),
+        send_address: form.send_address.clone(),
+        send_point: form.send_point.clone(),
         receive_name: form.receive_name.clone(),
-        next_point: form.next_point.clone()
+        receive_phone: form.receive_phone.clone(),
+        receive_address: form.receive_address.clone(),
+        receive_point: form.receive_point.clone(),
+        from_point_id: form.from_point_id.clone(),
+        dest_point_id: form.dest_point_id.clone(),
+        status: form.status.clone(),
+        main_cost: form.main_cost.clone(),
+        other_cost: form.other_cost.clone(),
+        gtgt_cost: form.gtgt_cost.clone(),
+        other_service_cost: form.other_service_cost.clone(),
+        total_cost: form.total_cost.clone(),
+        vat: form.vat.clone(),
+        package_type: form.package_type.clone(),
+        instruction_type: form.instruction_type.clone(),
+        weight: form.weight.clone(),
+        special_service: form.special_service.clone(),
+        note: form.note.clone(),
+        cod: form.cod.clone(),
+        receive_other_cost: form.receive_other_cost.clone(),
+        items: form.items.clone()
     };
 
     let result = insert_package(&mut conn, new_package);
@@ -97,20 +109,32 @@ async fn update_package_handle(form: web::Json<UpdatePackage>, data: web::Data<A
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
     let package = UpdatePackage {
-        send_point: form.send_point.clone(),
-        receive_point: form.receive_point.clone(),
-        cur_point: form.cur_point.clone(),
-        status: form.status.clone(),
         send_name: form.send_name.clone(),
         send_date: form.send_date.clone(),
-        required_date: form.required_date.clone(),
-        shipped_date: form.shipped_date.clone(),
-        send_address: form.send_address.clone(),
-        receive_address: form.receive_address.clone(),
         send_phone: form.send_phone.clone(),
-        receive_phone: form.receive_phone.clone(),
+        send_address: form.send_address.clone(),
+        send_point: form.send_point.clone(),
         receive_name: form.receive_name.clone(),
-        next_point: form.next_point.clone()
+        receive_phone: form.receive_phone.clone(),
+        receive_address: form.receive_address.clone(),
+        receive_point: form.receive_point.clone(),
+        from_point_id: form.from_point_id.clone(),
+        dest_point_id: form.dest_point_id.clone(),
+        status: form.status.clone(),
+        main_cost: form.main_cost.clone(),
+        other_cost: form.other_cost.clone(),
+        gtgt_cost: form.gtgt_cost.clone(),
+        other_service_cost: form.other_service_cost.clone(),
+        total_cost: form.total_cost.clone(),
+        vat: form.vat.clone(),
+        package_type: form.package_type.clone(),
+        instruction_type: form.instruction_type.clone(),
+        weight: form.weight.clone(),
+        special_service: form.special_service.clone(),
+        note: form.note.clone(),
+        cod: form.cod.clone(),
+        receive_other_cost: form.receive_other_cost.clone(),
+        items: form.items.clone()
     };
 
     let package_id = package_id.into_inner();

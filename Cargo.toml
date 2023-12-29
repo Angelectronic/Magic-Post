@@ -14,3 +14,4 @@ bcrypt = "0.15"
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
 uuid = { version = "1.6.1", features = ["v4", "fast-rng", "macro-diagnostics"]}
 actix-cors = "0.6.5"
+rand = "0.8.5"
