@@ -1,4 +1,4 @@
-# magicpost-test
+# magicpost
 
 ## Installation
 
