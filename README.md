@@ -36,6 +36,8 @@ Frontend: Phạm Vũ Duy & Đỗ Mạnh Dũng
 Phí Minh Hiếu - 21020200:
 - Tạo, thiết kế và duy trì, chỉnh sửa CSDL
 - Lập trình Backend theo mô hình MVC sử dụng ngôn ngữ lập trình Rust
+
+First import magicpost1.sql in backend into database name 'magic_post' in Mysql (We recommend use xampp)
 Run backend local: (You must have install Rust)
 ```sh
 cd backend
