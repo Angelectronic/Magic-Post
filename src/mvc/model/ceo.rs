@@ -230,13 +230,16 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
     ).unwrap();
     
     let id = &id[0];
-    let link_point_id = match point.link_point_id {
-        Some(link_point_id) => match link_point_id.as_str() {
+
+    let convert = |data: Option<String>| match data {
+        Some(data) => match data.as_str() {
             "" => String::from("null"),
-            _ => link_point_id,
+            _ => data,
         },
         None => String::from("null"),
     };
+
+    let link_point_id = convert(point.link_point_id);
 
     let query = format!("INSERT INTO points (id, location, type, link_point_id, create_date, reference, name, city, zipcode, phone) VALUES ('{}', '{}', {}, {}, CURRENT_DATE(), '{}', '{}', '{}', '{}', '{}')", id, point.location, p_type, link_point_id,reference, point.name, point.city, point.zipcode, point.phone);
 
@@ -244,7 +247,9 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
 
     if result.is_ok() {
         // Check if manager exists
-        let verify_query = format!("SELECT id FROM employees WHERE id = '{}'", point.manager_id);
+        let manager_id = convert(Some(point.manager_id));
+
+        let verify_query = format!("SELECT id FROM employees WHERE id = '{}'", manager_id);
         let verify = conn.query_map(
             verify_query,
             |id: String| id,
@@ -253,7 +258,7 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
             return String::from("Error updating manager but added point");
         }
 
-        let query = format!("UPDATE employees SET point_id = '{}' WHERE id = '{}'", id, point.manager_id);
+        let query = format!("UPDATE employees SET point_id = '{}' WHERE id = '{}'", id, manager_id);
         let result2 = conn.query_drop(query);
         
         if result2.is_ok() {
