@@ -364,3 +364,12 @@ pub fn get_packages_by_delivery_id(conn: &mut r2d2::PooledConnection<MySqlConnec
 
     Some(concat_packages)
 }
+
+pub fn get_package_history_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, id: String) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let query = format!("SELECT delivery.begin_date, delivery.arrived_date, p1.reference, p2.reference FROM delivery INNER JOIN package_delivery ON delivery.id = package_delivery.delivery_id INNER JOIN package ON package_delivery.package_id = package.id INNER JOIN points as p1 ON delivery.start_point = p1.id INNER JOIN points as p2 ON delivery.end_point = p2.id WHERE package.id = '{}' ORDER BY delivery.arrived_date", id);
+
+    conn.query_map(
+        query,
+        |(begin_date, arrived_date, from_point_id, dest_point_id)| (begin_date, arrived_date, from_point_id, dest_point_id),
+    ).ok()
+}

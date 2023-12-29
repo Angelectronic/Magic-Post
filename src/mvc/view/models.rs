@@ -210,3 +210,11 @@ pub struct GetDelivery {
     pub final_state: Option<String>,
     pub packages: Vec<PackageData>
 }
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct PackageHistory {
+    pub begin_date: String,
+    pub arrived_date: Option<String>,
+    pub from_point_id: String,
+    pub dest_point_id: String
+}

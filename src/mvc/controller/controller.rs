@@ -10,14 +10,14 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_employee_by_id, update_employee_password_by_id, format_nested_package, get_all_deliveries, get_packages_by_delivery_id
+    get_employee_by_id, update_employee_password_by_id, format_nested_package, get_all_deliveries, get_packages_by_delivery_id, get_packages_by_id, get_package_history_by_id
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
-    LoginData, PackageData,
+    LoginData, PackageData, PackageHistory,
 };
-use crate::mvc::view::view::{view_employees, view_packages, view_delivery};
+use crate::mvc::view::view::{view_employees, view_packages, view_delivery, view_package_history};
 
 use super::ceo::init_routes_ceo;
 use super::leader::init_routes_leader;
@@ -128,16 +128,21 @@ async fn update_password(data: web::Data<AppState>, new_pass: String, session: S
     }
 }
 
-#[get("/packages/all")]
-async fn get_packages(data: web::Data<AppState>, session: Session) -> impl Responder {
+#[get("/packages/{id}")]
+async fn get_packages(data: web::Data<AppState>, session: Session, id: web::Path<String>) -> impl Responder {
     if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
         return HttpResponse::Forbidden().body("Forbidden");
     }
 
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
-    
-    let package = get_all_packages(&mut conn);        
+    let id = id.into_inner();
+
+    let package = match id.as_str() {
+        "all" => get_all_packages(&mut conn),
+        _ => get_packages_by_id(&mut conn, id),
+    };
+        
     
     match package {
         Some(package) => {
@@ -190,6 +195,29 @@ async fn get_deliveries(data: web::Data<AppState>, session: Session) -> impl Res
     }
 }
 
+
+#[get("/package_history/{id}")]
+async fn get_package_history(data: web::Data<AppState>, session: Session, id: web::Path<String>) -> impl Responder {
+    if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+    let id = id.into_inner();
+
+    let package_history = get_package_history_by_id(&mut conn, id);
+    
+    match package_history {
+        Some(package) => {
+            let package: Vec<PackageHistory> = view_package_history(package);
+            HttpResponse::Ok().json(package)
+        },
+        None => HttpResponse::BadRequest().body("Can't get package history"),
+    }
+}
+
+
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(all_employees)
         .service(signup)
@@ -197,6 +225,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(update_password)
         .service(get_packages)
         .service(get_deliveries)
+        .service(get_package_history)
         .configure(init_routes_ceo)
         .configure(init_routes_leader)
         .configure(init_routes_subordinate);
