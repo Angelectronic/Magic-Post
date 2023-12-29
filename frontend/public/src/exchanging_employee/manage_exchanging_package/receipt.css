@@ -1,0 +1,13 @@
+.special_class {
+    table {
+        border: 2px solid #000;
+        border-collapse: collapse;
+    };
+
+    th,
+    td {
+        font-weight: normal;
+        border: 2px solid #000;
+        vertical-align: top;
+    };
+}
