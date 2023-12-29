@@ -18,9 +18,9 @@ async fn add_package_transaction(form: web::Json<UpdatePackage>, data: web::Data
     let point_id = session.get::<String>("point_id").unwrap().unwrap();
     let form_point_id = form.send_point.clone().unwrap();
 
-    if point_id != form_point_id {
-        return HttpResponse::BadRequest().body("Wrong point id");
-    }
+    // if point_id != form_point_id {
+    //     return HttpResponse::BadRequest().body("Wrong point id");
+    // }
 
     let new_package = UpdatePackage {
         send_name: form.send_name.clone(),

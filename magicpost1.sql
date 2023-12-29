@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 28, 2023 lúc 11:35 AM
+-- Thời gian đã tạo: Th12 29, 2023 lúc 08:08 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -39,7 +39,12 @@ CREATE TABLE `cur_point_history` (
 --
 
 INSERT INTO `cur_point_history` (`point_id`, `package_id`, `time`, `status`) VALUES
-('084bd1d1-8945-11ee-b789-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f', '2023-11-12 16:56:52', 'send');
+('0215a62a-8944-11ee-b789-b05cdad83c7f', '0144fd37-957b-11ee-90fa-b05cdad83c7f', '2023-11-01 13:40:33', 'send'),
+('0215a62a-8944-11ee-b789-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f', '2023-11-01 08:00:00', 'send'),
+('021599a1-8944-11ee-b789-b05cdad83c7f', '0144fd37-957b-11ee-90fa-b05cdad83c7f', '2023-10-18 21:53:59', 'send'),
+('021599a1-8944-11ee-b789-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f', '2023-10-18 21:53:59', 'send'),
+('084bd1d1-8945-11ee-b789-b05cdad83c7f', '0144fd37-957b-11ee-90fa-b05cdad83c7f', '2024-01-22 22:02:16', 'send'),
+('084bd1d1-8945-11ee-b789-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f', '2024-01-22 22:02:16', 'send');
 
 -- --------------------------------------------------------
 
@@ -49,18 +54,23 @@ INSERT INTO `cur_point_history` (`point_id`, `package_id`, `time`, `status`) VAL
 
 CREATE TABLE `delivery` (
   `id` char(36) NOT NULL,
+  `delivery_id` varchar(36) NOT NULL,
   `start_point` char(36) NOT NULL,
   `end_point` char(36) NOT NULL,
   `begin_date` datetime NOT NULL,
-  `arrived_date` datetime DEFAULT NULL
+  `expected_date` date DEFAULT NULL,
+  `arrived_date` datetime DEFAULT NULL,
+  `final_state` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `delivery`
 --
 
-INSERT INTO `delivery` (`id`, `start_point`, `end_point`, `begin_date`, `arrived_date`) VALUES
-('cafcbaa5-a563-11ee-8a45-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '084bdf03-8945-11ee-b789-b05cdad83c7f', '2023-12-28 10:30:25', NULL);
+INSERT INTO `delivery` (`id`, `delivery_id`, `start_point`, `end_point`, `begin_date`, `expected_date`, `arrived_date`, `final_state`) VALUES
+('02a07259-a591-11ee-8a45-b05cdad83c7f', 'DH1234', '0215a62a-8944-11ee-b789-b05cdad83c7f', '021599a1-8944-11ee-b789-b05cdad83c7f', '2023-10-17 15:53:34', '2023-10-19', '2023-10-18 21:53:34', 'finished'),
+('92a2a3c5-a592-11ee-8a45-b05cdad83c7f', 'DH1236', '021599a1-8944-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '2023-10-20 16:02:54', '2023-12-22', '2024-01-22 22:02:54', 'finished'),
+('cafcbaa5-a563-11ee-8a45-b05cdad83c7f', 'DH1235', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '084bdf03-8945-11ee-b789-b05cdad83c7f', '2023-12-28 10:30:25', '2024-01-01', NULL, 'sending');
 
 -- --------------------------------------------------------
 
@@ -90,7 +100,7 @@ CREATE TABLE `employees` (
 
 INSERT INTO `employees` (`id`, `reference`, `create_date`, `last_seen`, `name`, `sex`, `email`, `birthday`, `phone`, `position`, `point_id`, `username`, `password`) VALUES
 ('1102e612-8ecf-11ee-8c8f-b05cdad83c7f', 'ABC', '2023-12-08', '2023-12-28 16:10:32', 'Phạm Văn Hùng', 'male', NULL, NULL, '', 'leader', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'leader1', '$2b$12$LfPiJzMJQxpJWnba8WreseM8p9h6XudjSZ.emmJB8n7IPvGFkg1b6'),
-('285f6ae9-956c-11ee-8651-b05cdad83c7f', 'BDC', '2023-12-08', NULL, 'hieu', 'male', NULL, NULL, '', 'subordinate', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'hieu2', '$2b$12$VWRvsZlb6U1qbUDEgZlXPeDXDX5.Zxw18Nw38I6rgM6xbFrGhmaxS'),
+('285f6ae9-956c-11ee-8651-b05cdad83c7f', 'BDC', '2023-12-08', '2023-12-29 09:52:43', 'hieu', 'male', NULL, NULL, '', 'subordinate', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'hieu2', '$2b$12$VWRvsZlb6U1qbUDEgZlXPeDXDX5.Zxw18Nw38I6rgM6xbFrGhmaxS'),
 ('36cbbf10-8ecf-11ee-8c8f-b05cdad83c7f', 'UDV', '2023-12-08', NULL, 'Huỳnh Thế Công', 'male', NULL, NULL, '', 'leader', '021599a1-8944-11ee-b789-b05cdad83c7f', 'leader2', '$2b$12$/fo3UJI/srr6W5f3vNjGxeoPsUlnuWMlWLVhBkdAFXwNh67geUh4y'),
 ('485cf9b3-8ecf-11ee-8c8f-b05cdad83c7f', 'DEF', '2023-12-08', NULL, 'Đỗ Mạnh Hoa', 'male', NULL, NULL, '', 'leader', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'leader3', '$2b$12$IYzrthDGj8lQ35AWfusYtuYoD.bmVBiLANJjP6oKbYNtKFdgWF5Gy'),
 ('594a6490-8ecf-11ee-8c8f-b05cdad83c7f', 'XYZ', '2023-12-08', NULL, 'Thế Quang', 'male', NULL, NULL, '', 'leader', '084bdf03-8945-11ee-b789-b05cdad83c7f', 'leader4', '$2b$12$4dxKofFmHXaZhsSwLkKIC.u8GogUC2lhDv0Z6WNW0E1RQFwtQV0ji'),
@@ -134,6 +144,7 @@ CREATE TABLE `package` (
   `send_address` varchar(255) DEFAULT NULL,
   `send_point` char(36) DEFAULT NULL,
   `receive_name` varchar(255) DEFAULT NULL,
+  `receive_date` date DEFAULT NULL,
   `receive_phone` varchar(255) DEFAULT NULL,
   `receive_address` varchar(255) DEFAULT NULL,
   `receive_point` char(36) DEFAULT NULL,
@@ -149,8 +160,8 @@ CREATE TABLE `package` (
   `package_type` tinyint(4) NOT NULL DEFAULT 0,
   `instruction_type` tinyint(4) DEFAULT NULL,
   `weight` float NOT NULL DEFAULT 0,
-  `special_service` varchar(255) NOT NULL DEFAULT '',
-  `note` varchar(255) NOT NULL DEFAULT '',
+  `special_service` varchar(255) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
   `cod` int(11) NOT NULL DEFAULT 0,
   `receive_other_cost` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -159,9 +170,9 @@ CREATE TABLE `package` (
 -- Đang đổ dữ liệu cho bảng `package`
 --
 
-INSERT INTO `package` (`id`, `package_id`, `send_name`, `send_date`, `send_phone`, `send_address`, `send_point`, `receive_name`, `receive_phone`, `receive_address`, `receive_point`, `cur_point`, `next_point`, `status`, `main_cost`, `other_cost`, `gtgt_cost`, `other_service_cost`, `total_cost`, `vat`, `package_type`, `instruction_type`, `weight`, `special_service`, `note`, `cod`, `receive_other_cost`) VALUES
-('0144fd37-957b-11ee-90fa-b05cdad83c7f', 'VN1235HN', 'Tâm', '2023-11-01', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Nam', '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '021599a1-8944-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0),
-('bd5bee42-894b-11ee-b789-b05cdad83c7f', 'VN1236HN', 'Tâm', '2023-11-01', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Trung', '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '084bdf03-8945-11ee-b789-b05cdad83c7f', 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0);
+INSERT INTO `package` (`id`, `package_id`, `send_name`, `send_date`, `send_phone`, `send_address`, `send_point`, `receive_name`, `receive_date`, `receive_phone`, `receive_address`, `receive_point`, `cur_point`, `next_point`, `status`, `main_cost`, `other_cost`, `gtgt_cost`, `other_service_cost`, `total_cost`, `vat`, `package_type`, `instruction_type`, `weight`, `special_service`, `note`, `cod`, `receive_other_cost`) VALUES
+('0144fd37-957b-11ee-90fa-b05cdad83c7f', 'VN1235HN', 'Tâm', '2023-10-17', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Nam', NULL, '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', NULL, 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0),
+('bd5bee42-894b-11ee-b789-b05cdad83c7f', 'VN1236HN', 'Tâm', '2023-10-16', '0937128323', 'Tầng 1, Tòa nhà Báo Lao Động, 06 P. Phạm Văn Bạch, Yên Hoà, Cầu Giấy, Hà Nội', '0215a62a-8944-11ee-b789-b05cdad83c7f', 'Trung', NULL, '0314912333', '73-75 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh 70000, Việt Nam', '1c54efa7-8945-11ee-b789-b05cdad83c7f', '084bd1d1-8945-11ee-b789-b05cdad83c7f', '084bdf03-8945-11ee-b789-b05cdad83c7f', 'In-transit', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -179,7 +190,11 @@ CREATE TABLE `package_delivery` (
 --
 
 INSERT INTO `package_delivery` (`delivery_id`, `package_id`) VALUES
-('cafcbaa5-a563-11ee-8a45-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f');
+('02a07259-a591-11ee-8a45-b05cdad83c7f', '0144fd37-957b-11ee-90fa-b05cdad83c7f'),
+('92a2a3c5-a592-11ee-8a45-b05cdad83c7f', '0144fd37-957b-11ee-90fa-b05cdad83c7f'),
+('cafcbaa5-a563-11ee-8a45-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f'),
+('02a07259-a591-11ee-8a45-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f'),
+('92a2a3c5-a592-11ee-8a45-b05cdad83c7f', 'bd5bee42-894b-11ee-b789-b05cdad83c7f');
 
 -- --------------------------------------------------------
 
@@ -257,7 +272,7 @@ ALTER TABLE `package`
 -- Chỉ mục cho bảng `package_delivery`
 --
 ALTER TABLE `package_delivery`
-  ADD PRIMARY KEY (`delivery_id`),
+  ADD KEY `delivery_id` (`delivery_id`),
   ADD KEY `package_delivery_package_id_foreign` (`package_id`);
 
 --

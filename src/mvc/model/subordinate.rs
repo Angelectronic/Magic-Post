@@ -39,12 +39,23 @@ pub fn insert_package(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>,
     let send_name = convert_from_option(package.send_name);
     let send_phone = convert_from_option(package.send_phone);
     let send_address = convert_from_option(package.send_address);
+    
     let send_point = convert_from_option(package.send_point.clone());
+    let send_point = conn.query_first(format!("SELECT id FROM points WHERE reference = {}", send_point)).unwrap();
+    let send_point: String = send_point.unwrap();
+    let send_point = format!("'{}'", send_point);
+
     let receive_name = convert_from_option(package.receive_name);
     let receive_phone = convert_from_option(package.receive_phone);
     let receive_address = convert_from_option(package.receive_address);
+    
     let receive_point = convert_from_option(package.receive_point);
-    let from_point_id = convert_from_option(package.send_point);
+    let receive_point = conn.query_first(format!("SELECT id FROM points WHERE reference = {}", receive_point)).unwrap();
+    let receive_point: String = receive_point.unwrap();
+    let receive_point = format!("'{}'", receive_point);
+
+    let from_point_id = send_point.clone();
+
     let dest_point_id = String::from("null");
     let status = convert_from_option(package.status);
     let main_cost = package.main_cost;
@@ -73,7 +84,7 @@ pub fn insert_package(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>,
 
     let query = format!("INSERT INTO package VALUES ('{}', '{}', {}, CURRENT_DATE(), {}, {}, {}, {}, null, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})", id, package_id, send_name,  send_phone, send_address, send_point, receive_name, receive_phone, receive_address, receive_point, from_point_id, dest_point_id, status, main_cost, other_cost, gtgt_cost, other_service_cost, total_cost, vat, package_type, instruction_type, weight, special_service, note, cod, receive_other_cost);
     let result = conn.query_drop(query).is_ok();
-    
+
     if result { 
         for item in package.items {
             let item_name = convert_from_option(Some(item.item_name));
@@ -146,12 +157,21 @@ pub fn update_send_to_gathering(conn: &mut r2d2::PooledConnection<MySqlConnectio
 }
 
 pub fn confirm_delivery(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, delivery_id: String) -> bool {
-    let query = format!("UPDATE delivery SET arrived_date = NOW() WHERE id = '{}'", delivery_id);
+    let query = format!("UPDATE delivery SET arrived_date = NOW(), final_state = 'finished' WHERE id = '{}'", delivery_id);
     let result = conn.query_drop(query).is_ok();
 
     if result {
         let second_query = format!("UPDATE package SET package.cur_point = package.next_point, package.next_point = null WHERE package.id IN (SELECT package_delivery.package_id FROM package_delivery WHERE package_delivery.delivery_id='{}')", delivery_id);
-        conn.query_drop(second_query).is_ok()
+        let result2 = conn.query_drop(second_query).is_ok();
+
+        if result2 {
+            let third_query = format!("INSERT INTO cur_point_history (point_id, package_id, time, status) VALUES ((SELECT package.cur_point FROM package WHERE package.id IN (SELECT package_delivery.package_id FROM package_delivery WHERE package_delivery.delivery_id='{}')), (SELECT package.id FROM package WHERE package.id IN (SELECT package_delivery.package_id FROM package_delivery WHERE package_delivery.delivery_id='{}')), NOW(), IF((SELECT package.status FROM package WHERE package.id IN (SELECT package_delivery.package_id FROM package_delivery WHERE package_delivery.delivery_id='{}')) = 'Returned', 'Returned', 'send'))", delivery_id, delivery_id, delivery_id);
+
+            conn.query_drop(third_query).is_ok()
+        } else {
+            false
+        }
+
     } else {
         false
     }
