@@ -207,5 +207,6 @@ pub struct GetDelivery {
     pub from_point_id: String,
     pub current_dest: String,
     pub dest_point_id: String,
+    pub final_state: Option<String>,
     pub packages: Vec<PackageData>
 }

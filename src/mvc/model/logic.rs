@@ -313,12 +313,12 @@ pub fn get_packages_by_id(conn: &mut r2d2::PooledConnection<MySqlConnectionManag
     Some(concat_packages)
 }
 
-pub fn get_all_deliveries(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
-    let query = format!("SELECT delivery.id, delivery.delivery_id, delivery.begin_date, delivery.expected_date, delivery.arrived_date, IF(p1.type=0,'exchanging','gathering') as current_from,p1.reference as from_point_id, IF(p2.type=0,'exchanging','gathering') as current_dest,p2.reference as dest_point_id FROM delivery INNER JOIN points as p1 ON delivery.start_point = p1.id INNER JOIN points as p2 ON delivery.end_point = p2.id;");
+pub fn get_all_deliveries(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>) -> Option<Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>)>> {
+    let query = format!("SELECT delivery.id, delivery.delivery_id, delivery.begin_date, delivery.expected_date, delivery.arrived_date, IF(p1.type=0,'exchanging','gathering') as current_from,p1.reference as from_point_id, IF(p2.type=0,'exchanging','gathering') as current_dest,p2.reference as dest_point_id, delivery.final_state FROM delivery INNER JOIN points as p1 ON delivery.start_point = p1.id INNER JOIN points as p2 ON delivery.end_point = p2.id;");
 
     conn.query_map(
         query,
-        |(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id)| (id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id),
+        |(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, final_state)| (id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, final_state),
     ).ok()
 }
 

@@ -164,7 +164,7 @@ async fn get_deliveries(data: web::Data<AppState>, session: Session) -> impl Res
     match delivery {
         Some(delivery_raw) => {
 
-            let delivery_package_raw = delivery_raw.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id)| {
+            let delivery_package_raw = delivery_raw.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, final_state)| {
                 let convert_utf8 = |data: Option<Vec<u8>>| -> String {
                     data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
                 };
@@ -179,7 +179,7 @@ async fn get_deliveries(data: web::Data<AppState>, session: Session) -> impl Res
                     },
                     None => vec![]
                 };
-                (id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, package)
+                (id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, final_state, package)
             }).collect::<Vec<_>>();
 
             let delivery = view_delivery(delivery_package_raw);

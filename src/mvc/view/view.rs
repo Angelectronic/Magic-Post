@@ -221,8 +221,8 @@ pub fn view_packages_arrive_time(packages: Vec<(Option<Vec<u8>>, Option<Vec<u8>>
     }).collect()
 }
 
-pub fn view_delivery(deliveries: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Vec<PackageData>)>) -> Vec<GetDelivery> {
-    deliveries.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, packages)| {
+pub fn view_delivery(deliveries: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Option<Vec<u8>>, Vec<PackageData>)>) -> Vec<GetDelivery> {
+    deliveries.into_iter().map(|(id, delivery_id, begin_date, expected_date, arrived_date, current_from, from_point_id, current_dest, dest_point_id, final_state, packages)| {
         let convert_utf8 = |data: Option<Vec<u8>>| -> String {
             data.map(|v| String::from_utf8(v).unwrap_or_default()).unwrap_or_default()
         };
@@ -237,6 +237,7 @@ pub fn view_delivery(deliveries: Vec<(Option<Vec<u8>>, Option<Vec<u8>>, Option<V
             from_point_id: convert_utf8(from_point_id),
             current_dest: convert_utf8(current_dest),
             dest_point_id: convert_utf8(dest_point_id),
+            final_state: Some(convert_utf8(final_state)),
             packages: packages,
         }
     }).collect()
