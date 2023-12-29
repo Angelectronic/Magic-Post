@@ -1,10 +1,8 @@
-use actix_web::{get, web, HttpResponse, Responder, post, delete, put};
+use actix_web::{web, HttpResponse, Responder, post, put};
 use crate::AppState;
 use actix_session::Session;
-use crate::mvc::view::models::{UpdatePackage, PackageData};
-use crate::mvc::model::subordinate::{check_subordinate, insert_package, change_status_packaging, change_status_shipped, update_package, get_point_by_id, update_send_to_gathering, confirm_delivery};
-use crate::mvc::model::logic::get_packages_by_id;
-
+use crate::mvc::view::models::UpdatePackage;
+use crate::mvc::model::subordinate::{check_subordinate, insert_package, change_status_shipped, update_package, get_point_by_id, update_send_to_gathering, confirm_delivery};
 
 #[post("/subordinate/add_package")]
 async fn add_package_transaction(form: web::Json<UpdatePackage>, data: web::Data<AppState>, session: Session) -> impl Responder {
@@ -15,8 +13,8 @@ async fn add_package_transaction(form: web::Json<UpdatePackage>, data: web::Data
     let pool = data.pool.clone();
     let mut conn = pool.get().expect("Failed to get connection from pool");
 
-    let point_id = session.get::<String>("point_id").unwrap().unwrap();
-    let form_point_id = form.send_point.clone().unwrap();
+    // let point_id = session.get::<String>("point_id").unwrap().unwrap();
+    // let form_point_id = form.send_point.clone().unwrap();
 
     // if point_id != form_point_id {
     //     return HttpResponse::BadRequest().body("Wrong point id");

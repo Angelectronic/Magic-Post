@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use actix_session::Session;
 use r2d2_mysql::{
     mysql::prelude::*,
@@ -101,12 +99,6 @@ pub fn insert_package(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>,
         false
     }
 
-}
-
-
-pub fn change_status_packaging(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, package_id: String) -> bool {
-    let query = format!("UPDATE package SET status = 'Packaging' WHERE id = '{}'", package_id);
-    conn.query_drop(query).is_ok()
 }
 
 pub fn change_status_shipped(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, package_id: String, cur_point: String) -> bool {
