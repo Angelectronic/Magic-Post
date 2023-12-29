@@ -231,11 +231,15 @@ pub fn insert_point(conn: &mut r2d2::PooledConnection<MySqlConnectionManager>, p
     
     let id = &id[0];
     let link_point_id = match point.link_point_id {
-        Some(link_point_id) => format!("'{}'", link_point_id),
+        Some(link_point_id) => match link_point_id.as_str() {
+            "" => String::from("null"),
+            _ => link_point_id,
+        },
         None => String::from("null"),
     };
 
     let query = format!("INSERT INTO points (id, location, type, link_point_id, create_date, reference, name, city, zipcode, phone) VALUES ('{}', '{}', {}, {}, CURRENT_DATE(), '{}', '{}', '{}', '{}', '{}')", id, point.location, p_type, link_point_id,reference, point.name, point.city, point.zipcode, point.phone);
+
     let result = conn.query_drop(query);
 
     if result.is_ok() {

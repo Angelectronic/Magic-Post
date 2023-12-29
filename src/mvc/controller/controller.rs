@@ -10,12 +10,12 @@ use crate::mvc::model::logic::{
     check_employee_by_username,
     insert_employee,
     verify_employee_by_username_password,
-    get_employee_by_id, update_employee_password_by_id, format_nested_package, get_all_deliveries, get_packages_by_delivery_id, get_packages_by_id, get_package_history_by_id
+    get_employee_by_id, update_employee_password_by_id, format_nested_package, get_all_deliveries, get_packages_by_delivery_id, get_packages_by_id, get_package_history_by_id, insert_delivery
 };
 use crate::mvc::view::models::{
     CreateEmployeeData,
     SignupData,
-    LoginData, PackageData, PackageHistory,
+    LoginData, PackageData, PackageHistory, AddDelivery,
 };
 use crate::mvc::view::view::{view_employees, view_packages, view_delivery, view_package_history};
 
@@ -195,6 +195,34 @@ async fn get_deliveries(data: web::Data<AppState>, session: Session) -> impl Res
     }
 }
 
+#[post("/add_deliveries")]
+async fn add_delivery(data: web::Data<AppState>, session: Session, form: web::Json<AddDelivery>) -> impl Responder {
+    if (!check_ceo(&session)) && (!check_leader(&session)) && (!check_subordinate(&session)) {
+        return HttpResponse::Forbidden().body("Forbidden");
+    }
+
+    let pool = data.pool.clone();
+    let mut conn = pool.get().expect("Failed to get connection from pool");
+
+    let delivery = AddDelivery {
+        begin_date: form.begin_date.clone(),
+        expected_date: form.expected_date.clone(),
+        arrived_date: form.arrived_date.clone(),
+        from_point: form.from_point.clone(),
+        dest_point: form.dest_point.clone(),
+        final_state: form.final_state.clone(),
+        packages: form.packages.clone(),
+    };
+    
+    let result = insert_delivery(&mut conn, delivery);
+    match result {
+        true => HttpResponse::Ok().body("Add delivery successfully"),
+        false => HttpResponse::BadRequest().body("Can't add delivery"),
+    }
+}
+
+
+
 
 #[get("/package_history/{id}")]
 async fn get_package_history(data: web::Data<AppState>, session: Session, id: web::Path<String>) -> impl Responder {
@@ -226,6 +254,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(get_packages)
         .service(get_deliveries)
         .service(get_package_history)
+        .service(add_delivery)
         .configure(init_routes_ceo)
         .configure(init_routes_leader)
         .configure(init_routes_subordinate);

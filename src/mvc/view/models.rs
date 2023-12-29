@@ -212,6 +212,17 @@ pub struct GetDelivery {
 }
 
 #[derive(Serialize, Clone, Debug, Deserialize)]
+pub struct AddDelivery {
+    pub begin_date: String,
+    pub expected_date: Option<String>,
+    pub arrived_date: Option<String>,
+    pub from_point: String,
+    pub dest_point: String,
+    pub final_state: Option<String>,
+    pub packages: Vec<String>
+}
+
+#[derive(Serialize, Clone, Debug, Deserialize)]
 pub struct PackageHistory {
     pub begin_date: String,
     pub arrived_date: Option<String>,

@@ -258,4 +258,3 @@ pub fn view_package_history(package_history: Vec<(Option<Vec<u8>>, Option<Vec<u8
     }).collect()
 }
 
-        
