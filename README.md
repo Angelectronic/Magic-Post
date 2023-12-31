@@ -1,6 +1,13 @@
 # magicpost
 
-## Installation
+# Frontend
+Phạm Vũ Duy - 21020179 & Đỗ Mạnh Dũng - 21020611
+
+- Lập trình Frontend bằng React
+- Thiết kế các chức năng cần thiết cho Frontend
+- Lấy và xử lí dữ liệu từ backend
+
+Installation
 
 Install the application dependencies by running:
 
@@ -8,7 +15,7 @@ Install the application dependencies by running:
 npm install
 ```
 
-## Development
+Development
 
 Start the application in development mode by running:
 
@@ -16,7 +23,7 @@ Start the application in development mode by running:
 npm run dev
 ```
 
-## Production
+Production
 
 Build the application in production mode by running:
 
@@ -24,13 +31,12 @@ Build the application in production mode by running:
 npm run build
 ```
 
-## DataProvider
+DataProvider
 
 The included data provider use [ra-data-json-server](https://github.com/marmelab/react-admin/tree/master/packages/ra-data-json-server). It fits REST APIs powered by [JSON Server](https://github.com/typicode/json-server), such as [JSONPlaceholder](https://jsonplaceholder.typicode.com/).
 
 You'll find an `.env` file at the project root that includes a `VITE_JSON_SERVER_URL` variable. Set it to the URL of your backend. By default, we set it to targets [JSONPlaceholder](https://jsonplaceholder.typicode.com/).
 
-Frontend: Phạm Vũ Duy & Đỗ Mạnh Dũng
 
 # Backend
 Phí Minh Hiếu - 21020200:
